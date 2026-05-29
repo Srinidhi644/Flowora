@@ -57,14 +57,14 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
 
 ---
-# Production profile (uses env vars)
+# Production profile (uses env vars, defaults to H2 file)
 spring:
   config:
     activate:
       on-profile: prod
 
   datasource:
-    url: ${DATABASE_URL:jdbc:h2:file:./data/flowora;AUTO_SERVER=TRUE}
+    url: ${DATABASE_URL:jdbc:h2:file:./data/flowora}
     driver-class-name: ${DATABASE_DRIVER:org.h2.Driver}
     username: ${DATABASE_USERNAME:sa}
     password: ${DATABASE_PASSWORD:}
@@ -76,6 +76,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.H2Dialect}
 
 app:
   jwt:
