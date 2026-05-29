@@ -1,0 +1,38 @@
+name: flowora
+description: All-in-one life management app — Day, Work, Cooking.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  flutter_riverpod: ^2.4.9
+  go_router: ^13.0.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  uuid: ^4.2.1
+  intl: ^0.19.0
+  flutter_local_notifications: ^17.0.0
+  google_fonts: ^6.1.0
+  flutter_slidable: ^3.0.1
+  table_calendar: ^3.0.9
+  fl_chart: ^0.66.0
+  image_picker: ^1.0.7
+  path_provider: ^2.1.2
+  shared_preferences: ^2.2.2
+  animations: ^2.0.10
+  http: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.7
+
+flutter:
+  uses-material-design: true

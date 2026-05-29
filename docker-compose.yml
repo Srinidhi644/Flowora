@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-flowora123}
+      MYSQL_DATABASE: flowora
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DATABASE_URL: jdbc:mysql://db:3306/flowora?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      DATABASE_DRIVER: com.mysql.cj.jdbc.Driver
+      DATABASE_USERNAME: root
+      DATABASE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-flowora123}
+      JWT_SECRET: ${JWT_SECRET:-your-production-secret-key-min-256-bits-change-this}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

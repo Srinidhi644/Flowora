@@ -1,0 +1,50 @@
+# Flutter
+*.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Android
+android/.gradle/
+android/local.properties
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/gradle/
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# macOS
+macos/Pods/
+macos/.symlinks/
+
+# Backend
+backend/target/
+*.class
+*.jar
+
+# Misc
+.DS_Store
+*.log
+*.env
+flowora-v1.0.0.apk
+build/
+backend/data/
+backend/target/
+preview/
