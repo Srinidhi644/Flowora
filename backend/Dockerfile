@@ -10,8 +10,7 @@ RUN mvn package -DskipTests -B
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-RUN addgroup -S flowora && adduser -S flowora -G flowora
-USER flowora
+RUN mkdir -p /app/data
 
 COPY --from=build /app/target/*.jar app.jar
 
