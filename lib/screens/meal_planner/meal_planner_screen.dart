@@ -7,7 +7,6 @@ import 'package:flowora/core/utils/date_utils.dart';
 import 'package:flowora/core/constants/app_constants.dart';
 import 'package:flowora/providers/meal_plan_provider.dart';
 import 'package:flowora/providers/recipe_provider.dart';
-import 'package:flowora/providers/shopping_list_provider.dart';
 import 'package:flowora/providers/inventory_provider.dart';
 import 'package:flowora/services/cooking_service.dart';
 import 'package:flowora/widgets/meal_slot_card.dart';
@@ -39,13 +38,6 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Meal Planner', style: AppTextStyles.heading2),
-        actions: [
-          TextButton.icon(
-            onPressed: () => _generateShoppingList(),
-            icon: const Icon(Icons.shopping_cart),
-            label: const Text('Shopping List'),
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -260,24 +252,4 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
     );
   }
 
-  void _generateShoppingList() {
-    final plans = ref.read(mealPlanProvider);
-    final recipes = ref.read(recipeProvider);
-
-    final allRecipeIds = <String?>[];
-    for (final plan in plans) {
-      allRecipeIds.addAll([
-        plan.breakfastRecipeId,
-        plan.lunchRecipeId,
-        plan.dinnerRecipeId,
-        plan.snackRecipeId,
-      ]);
-    }
-
-    ref
-        .read(shoppingListProvider.notifier)
-        .generateFromMealPlan(recipes, allRecipeIds);
-
-    context.push('/shopping-list');
-  }
 }
