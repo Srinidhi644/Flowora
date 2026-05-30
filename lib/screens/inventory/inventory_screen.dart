@@ -8,7 +8,8 @@ import 'package:flowora/widgets/empty_state.dart';
 import 'package:intl/intl.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
-  const InventoryScreen({super.key});
+  final bool embedded;
+  const InventoryScreen({super.key, this.embedded = false});
 
   @override
   ConsumerState<InventoryScreen> createState() => _InventoryScreenState();
@@ -32,11 +33,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
     final lowStockCount = items.where((i) => i.isLowStock).length;
     final expiringCount = items.where((i) => i.isExpiringSoon || i.isExpired).length;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Inventory', style: AppTextStyles.heading2),
-      ),
-      body: Column(
+    final body = Column(
         children: [
           // Stats
           Padding(
@@ -99,7 +96,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                   ),
           ),
         ],
+    );
+    if (widget.embedded) return body;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Inventory', style: AppTextStyles.heading2),
       ),
+      body: body,
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddItem,
         child: const Icon(Icons.add),

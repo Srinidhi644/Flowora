@@ -49,20 +49,30 @@ class MealPlan {
 
   MealPlan copyWith({
     DateTime? date,
-    String? breakfastRecipeId,
-    String? lunchRecipeId,
-    String? dinnerRecipeId,
-    String? snackRecipeId,
+    Object? breakfastRecipeId = _sentinel,
+    Object? lunchRecipeId = _sentinel,
+    Object? dinnerRecipeId = _sentinel,
+    Object? snackRecipeId = _sentinel,
   }) {
     return MealPlan(
       id: id,
       date: date ?? this.date,
-      breakfastRecipeId: breakfastRecipeId ?? this.breakfastRecipeId,
-      lunchRecipeId: lunchRecipeId ?? this.lunchRecipeId,
-      dinnerRecipeId: dinnerRecipeId ?? this.dinnerRecipeId,
-      snackRecipeId: snackRecipeId ?? this.snackRecipeId,
+      breakfastRecipeId: breakfastRecipeId == _sentinel
+          ? this.breakfastRecipeId
+          : breakfastRecipeId as String?,
+      lunchRecipeId: lunchRecipeId == _sentinel
+          ? this.lunchRecipeId
+          : lunchRecipeId as String?,
+      dinnerRecipeId: dinnerRecipeId == _sentinel
+          ? this.dinnerRecipeId
+          : dinnerRecipeId as String?,
+      snackRecipeId: snackRecipeId == _sentinel
+          ? this.snackRecipeId
+          : snackRecipeId as String?,
     );
   }
+
+  static const _sentinel = Object();
 
   Map<String, dynamic> toJson() => {
         'id': id,
