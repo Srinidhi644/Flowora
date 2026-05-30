@@ -31,6 +31,7 @@
 - **Shopping List** — Auto-generated from meal plan + manual items.
 - **"What Can I Cook?"** — Search recipes by available ingredients.
 - **Shared Cooking Data** — Recipes and inventory are shared across all users.
+- **Smart Inventory Flow** — Assigning a meal auto-checks inventory; missing ingredients go to shopping list. Completing a cooking block auto-deducts ingredients from inventory.
 
 ### 4. Inventory Tracker
 
