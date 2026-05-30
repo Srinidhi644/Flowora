@@ -31,14 +31,29 @@ class CookingService {
 
     final missing = inventoryNotifier.getMissingIngredients(recipe);
 
-    // Collect all items to add, then batch-add
+    // For missing items: add new or increase quantity of existing
+    final shoppingNotifier = ref.read(shoppingListProvider.notifier);
     final itemsToAdd = <ShoppingItem>[];
+
     for (final ingredient in missing) {
-      final alreadyInList = currentShoppingList.any((item) =>
+      final existingIdx = currentShoppingList.indexWhere((item) =>
           item.name.toLowerCase() == ingredient.name.toLowerCase() &&
           !item.isChecked);
 
-      if (!alreadyInList) {
+      if (existingIdx >= 0) {
+        // Already in list — increase quantity
+        final existing = currentShoppingList[existingIdx];
+        final oldQty = double.tryParse(existing.quantity) ?? 0;
+        final addQty = double.tryParse(ingredient.quantity) ?? 0;
+        final newQty = oldQty + addQty;
+        shoppingNotifier.updateItem(existing.copyWith(
+          quantity: newQty > 0
+              ? (newQty == newQty.roundToDouble()
+                  ? newQty.toInt().toString()
+                  : newQty.toStringAsFixed(1))
+              : existing.quantity,
+        ));
+      } else {
         itemsToAdd.add(ShoppingItem(
           name: ingredient.name,
           quantity: ingredient.quantity,
@@ -49,7 +64,7 @@ class CookingService {
     }
 
     if (itemsToAdd.isNotEmpty) {
-      ref.read(shoppingListProvider.notifier).addItems(itemsToAdd);
+      shoppingNotifier.addItems(itemsToAdd);
     }
   }
 
