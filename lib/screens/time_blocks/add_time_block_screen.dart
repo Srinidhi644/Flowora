@@ -8,7 +8,8 @@ import 'package:flowora/models/time_block.dart';
 import 'package:flowora/providers/time_block_provider.dart';
 
 class AddTimeBlockScreen extends ConsumerStatefulWidget {
-  const AddTimeBlockScreen({super.key});
+  final String? blockId;
+  const AddTimeBlockScreen({super.key, this.blockId});
 
   @override
   ConsumerState<AddTimeBlockScreen> createState() =>
@@ -23,6 +24,23 @@ class _AddTimeBlockScreenState extends ConsumerState<AddTimeBlockScreen> {
   TimeOfDay _endTime = const TimeOfDay(hour: 10, minute: 0);
   DateTime _date = DateTime.now();
 
+  bool get _isEditing => widget.blockId != null;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isEditing) {
+      final block = ref.read(timeBlockProvider)
+          .firstWhere((b) => b.id == widget.blockId);
+      _labelController.text = block.label;
+      _type = block.type == 'Task' ? 'Work' : block.type;
+      _isTask = block.isTask;
+      _startTime = TimeOfDay(hour: block.startHour, minute: block.startMinute);
+      _endTime = TimeOfDay(hour: block.endHour, minute: block.endMinute);
+      _date = block.date;
+    }
+  }
+
   @override
   void dispose() {
     _labelController.dispose();
@@ -30,18 +48,34 @@ class _AddTimeBlockScreenState extends ConsumerState<AddTimeBlockScreen> {
   }
 
   void _save() {
-    ref.read(timeBlockProvider.notifier).addBlock(
-          TimeBlock(
-            date: _date,
-            startHour: _startTime.hour,
-            startMinute: _startTime.minute,
-            endHour: _endTime.hour,
-            endMinute: _endTime.minute,
-            type: _isTask ? 'Task' : _type,
-            label: _labelController.text.trim(),
-            isTask: _isTask,
-          ),
-        );
+    if (_isEditing) {
+      ref.read(timeBlockProvider.notifier).updateBlock(
+            TimeBlock(
+              id: widget.blockId,
+              date: _date,
+              startHour: _startTime.hour,
+              startMinute: _startTime.minute,
+              endHour: _endTime.hour,
+              endMinute: _endTime.minute,
+              type: _isTask ? 'Task' : _type,
+              label: _labelController.text.trim(),
+              isTask: _isTask,
+            ),
+          );
+    } else {
+      ref.read(timeBlockProvider.notifier).addBlock(
+            TimeBlock(
+              date: _date,
+              startHour: _startTime.hour,
+              startMinute: _startTime.minute,
+              endHour: _endTime.hour,
+              endMinute: _endTime.minute,
+              type: _isTask ? 'Task' : _type,
+              label: _labelController.text.trim(),
+              isTask: _isTask,
+            ),
+          );
+    }
     context.pop();
   }
 
@@ -65,7 +99,8 @@ class _AddTimeBlockScreenState extends ConsumerState<AddTimeBlockScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Time Block', style: AppTextStyles.heading3),
+        title: Text(_isEditing ? 'Edit Block' : 'New Block',
+            style: AppTextStyles.heading3),
         actions: [
           TextButton(
             onPressed: _save,
@@ -88,7 +123,6 @@ class _AddTimeBlockScreenState extends ConsumerState<AddTimeBlockScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Task toggle
             SwitchListTile(
               title: const Text('This is a task'),
               subtitle: const Text('Tasks show completion status'),

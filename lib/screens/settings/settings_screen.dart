@@ -45,7 +45,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
-    final isDark = themeMode == ThemeMode.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -110,17 +109,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 Text('Appearance', style: AppTextStyles.heading3),
                 const SizedBox(height: 12),
-                SwitchListTile(
-                  title: const Text('Dark Mode'),
-                  subtitle: const Text('Toggle dark theme'),
-                  value: isDark,
-                  onChanged: (v) {
-                    ref.read(themeModeProvider.notifier).state =
-                        v ? ThemeMode.dark : ThemeMode.light;
-                  },
-                  secondary: Icon(
-                    isDark ? Icons.dark_mode : Icons.light_mode,
+                ListTile(
+                  leading: Icon(
+                    themeMode == ThemeMode.dark
+                        ? Icons.dark_mode
+                        : themeMode == ThemeMode.light
+                            ? Icons.light_mode
+                            : Icons.brightness_auto,
                     color: AppColors.primary,
+                  ),
+                  title: const Text('Theme'),
+                  subtitle: Text(
+                    themeMode == ThemeMode.system
+                        ? 'Follow system'
+                        : themeMode == ThemeMode.dark
+                            ? 'Dark mode'
+                            : 'Light mode',
+                  ),
+                  trailing: SegmentedButton<ThemeMode>(
+                    segments: const [
+                      ButtonSegment(
+                        value: ThemeMode.system,
+                        icon: Icon(Icons.brightness_auto, size: 18),
+                      ),
+                      ButtonSegment(
+                        value: ThemeMode.light,
+                        icon: Icon(Icons.light_mode, size: 18),
+                      ),
+                      ButtonSegment(
+                        value: ThemeMode.dark,
+                        icon: Icon(Icons.dark_mode, size: 18),
+                      ),
+                    ],
+                    selected: {themeMode},
+                    onSelectionChanged: (v) {
+                      ref.read(themeModeProvider.notifier).state = v.first;
+                    },
                   ),
                 ),
               ],

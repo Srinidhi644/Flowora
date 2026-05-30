@@ -21,11 +21,19 @@ class TimeBlockScreen extends ConsumerStatefulWidget {
 class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
   DateTime _selectedDate = DateTime.now();
 
+  bool get _isPastDate {
+    final today = DateTime.now();
+    final selected = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    final todayStart = DateTime(today.year, today.month, today.day);
+    return selected.isBefore(todayStart);
+  }
+
   void _onToggleComplete(block) {
+    if (_isPastDate) return; // Can't modify past
+
     final wasComplete = block.isComplete;
     ref.read(timeBlockProvider.notifier).toggleComplete(block.id);
 
-    // Cooking block: manage inventory
     if (block.type == 'Cooking') {
       final mealPlan = ref.read(mealPlanProvider.notifier).getPlanForDate(block.date);
       if (mealPlan != null) {
@@ -42,7 +50,6 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
           if (recipe != null &&
               block.label.toLowerCase().contains(recipe.name.toLowerCase())) {
             if (!wasComplete) {
-              // Marking done → deduct inventory
               cookingService.onMealCooked(recipeId);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -51,7 +58,6 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
                 ),
               );
             } else {
-              // Unchecking → restore inventory
               cookingService.onMealUncooked(recipeId);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -67,13 +73,22 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
     }
   }
 
+  /// Generate 14 days: today's week start through +1 week
+  List<DateTime> _getTwoWeeks() {
+    final today = DateTime.now();
+    final weekStart = AppDateUtils.startOfWeek(today);
+    return List.generate(14, (i) => weekStart.add(Duration(days: i)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final allBlocks = ref.watch(timeBlockProvider);
     final dayBlocks =
         ref.read(timeBlockProvider.notifier).blocksForDate(_selectedDate);
 
-    final weekDays = AppDateUtils.getWeekDays(_selectedDate);
+    final days = _getTwoWeeks();
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
 
     return Scaffold(
       appBar: AppBar(
@@ -81,39 +96,46 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
       ),
       body: Column(
         children: [
-          // Week day selector
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: weekDays.map((day) {
-                final isSelected =
-                    AppDateUtils.isSameDay(day, _selectedDate);
-                final isToday =
-                    AppDateUtils.isSameDay(day, DateTime.now());
+          // 2-week day selector (scrollable)
+          SizedBox(
+            height: 80,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              itemCount: days.length,
+              itemBuilder: (context, index) {
+                final day = days[index];
+                final isSelected = AppDateUtils.isSameDay(day, _selectedDate);
+                final isToday = AppDateUtils.isSameDay(day, today);
+                final dayStart = DateTime(day.year, day.month, day.day);
+                final isPast = dayStart.isBefore(todayStart);
+
                 return GestureDetector(
                   onTap: () => setState(() => _selectedDate = day),
                   child: Container(
-                    width: 44,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    width: 48,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(14),
                       border: isToday && !isSelected
-                          ? Border.all(color: AppColors.primary)
+                          ? Border.all(color: AppColors.primary, width: 2)
                           : null,
                     ),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          ['M', 'T', 'W', 'T', 'F', 'S', 'S'][
-                              day.weekday - 1],
+                          ['M', 'T', 'W', 'T', 'F', 'S', 'S'][day.weekday - 1],
                           style: AppTextStyles.label.copyWith(
                             color: isSelected
                                 ? Colors.white
-                                : AppColors.textGrey,
+                                : isPast
+                                    ? AppColors.textGrey.withOpacity(0.4)
+                                    : AppColors.textGrey,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -122,7 +144,9 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
                           style: AppTextStyles.bodyLarge.copyWith(
                             color: isSelected
                                 ? Colors.white
-                                : null,
+                                : isPast
+                                    ? AppColors.textGrey.withOpacity(0.4)
+                                    : null,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -130,17 +154,24 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
                     ),
                   ),
                 );
-              }).toList(),
+              },
             ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                AppDateUtils.relativeDay(_selectedDate),
-                style: AppTextStyles.heading3,
-              ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    AppDateUtils.relativeDay(_selectedDate),
+                    style: AppTextStyles.heading3,
+                  ),
+                ),
+                if (_isPastDate)
+                  Text('Read only', style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textGrey,
+                  )),
+              ],
             ),
           ),
           const SizedBox(height: 8),
@@ -149,9 +180,13 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
                 ? EmptyState(
                     icon: Icons.calendar_view_day,
                     title: 'No time blocks',
-                    subtitle: 'Plan your day with time blocks',
-                    buttonText: 'Add Block',
-                    onButtonTap: () => context.push('/time-blocks/add'),
+                    subtitle: _isPastDate
+                        ? 'Nothing was scheduled for this day'
+                        : 'Plan your day with time blocks',
+                    buttonText: _isPastDate ? null : 'Add Block',
+                    onButtonTap: _isPastDate
+                        ? null
+                        : () => context.push('/time-blocks/add'),
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -160,7 +195,9 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
                       final block = dayBlocks[index];
                       return Dismissible(
                         key: Key(block.id),
-                        direction: DismissDirection.endToStart,
+                        direction: _isPastDate
+                            ? DismissDirection.none
+                            : DismissDirection.endToStart,
                         onDismissed: (_) => ref
                             .read(timeBlockProvider.notifier)
                             .deleteBlock(block.id),
@@ -178,8 +215,13 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
                         ),
                         child: TimeBlockCard(
                           block: block,
-                          onToggleComplete: () =>
-                              _onToggleComplete(block),
+                          onTap: _isPastDate
+                              ? null
+                              : () => context.push('/time-blocks/edit',
+                                  extra: block.id),
+                          onToggleComplete: _isPastDate
+                              ? null
+                              : () => _onToggleComplete(block),
                         ),
                       );
                     },
@@ -187,10 +229,12 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/time-blocks/add'),
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: _isPastDate
+          ? null
+          : FloatingActionButton(
+              onPressed: () => context.push('/time-blocks/add'),
+              child: const Icon(Icons.add),
+            ),
     );
   }
 }
