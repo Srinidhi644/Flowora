@@ -8,6 +8,7 @@ import 'package:flowora/providers/time_block_provider.dart';
 import 'package:flowora/providers/meal_plan_provider.dart';
 import 'package:flowora/providers/recipe_provider.dart';
 import 'package:flowora/providers/expense_provider.dart';
+import 'package:flowora/services/cooking_service.dart';
 import 'package:flowora/widgets/section_header.dart';
 import 'package:flowora/widgets/time_block_card.dart';
 import 'package:flowora/widgets/meal_slot_card.dart';
