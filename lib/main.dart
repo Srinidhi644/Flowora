@@ -4,13 +4,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flowora/core/theme/app_theme.dart';
 import 'package:flowora/core/router.dart';
 import 'package:flowora/services/api_client.dart';
-import 'package:flowora/services/seed_data_loader.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await ApiClient.loadToken();
-  await SeedDataLoader.loadIfFirstRun();
   runApp(const ProviderScope(child: FlowOraApp()));
 }
 

@@ -18,8 +18,10 @@ class TimeBlockNotifier extends StateNotifier<List<TimeBlock>> {
       try {
         final data = await ApiClient.getTimeBlocks();
         final blocks = data.map((e) => TimeBlock.fromJson(Map<String, dynamic>.from(e))).toList();
-        state = blocks;
-        await _saveToHive();
+        if (blocks.isNotEmpty) {
+          state = blocks;
+          await _saveToHive();
+        }
       } catch (_) {}
     }
   }

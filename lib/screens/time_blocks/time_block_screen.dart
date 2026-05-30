@@ -25,14 +25,11 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
     final wasComplete = block.isComplete;
     ref.read(timeBlockProvider.notifier).toggleComplete(block.id);
 
-    // If marking as complete (not unchecking) and it's a cooking block,
-    // deduct ingredients from inventory
-    if (!wasComplete && block.type == 'Cooking') {
-      // Try to find the recipe from today's meal plan
+    // Cooking block: manage inventory
+    if (block.type == 'Cooking') {
       final mealPlan = ref.read(mealPlanProvider.notifier).getPlanForDate(block.date);
       if (mealPlan != null) {
         final cookingService = CookingService(ref);
-        // Check all meal slots for a matching recipe
         final recipeIds = [
           mealPlan.breakfastRecipeId,
           mealPlan.lunchRecipeId,
@@ -40,18 +37,29 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
           mealPlan.snackRecipeId,
         ].where((id) => id != null);
 
-        // Find recipe whose name matches the block label
         for (final recipeId in recipeIds) {
           final recipe = ref.read(recipeProvider.notifier).getById(recipeId!);
           if (recipe != null &&
               block.label.toLowerCase().contains(recipe.name.toLowerCase())) {
-            cookingService.onMealCooked(recipeId);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Inventory updated for ${recipe.name}'),
-                duration: const Duration(seconds: 2),
-              ),
-            );
+            if (!wasComplete) {
+              // Marking done → deduct inventory
+              cookingService.onMealCooked(recipeId);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Inventory deducted for ${recipe.name}'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            } else {
+              // Unchecking → restore inventory
+              cookingService.onMealUncooked(recipeId);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Inventory restored for ${recipe.name}'),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+            }
             break;
           }
         }

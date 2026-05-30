@@ -7,7 +7,6 @@ import 'package:flowora/core/utils/date_utils.dart';
 import 'package:flowora/core/constants/app_constants.dart';
 import 'package:flowora/providers/meal_plan_provider.dart';
 import 'package:flowora/providers/recipe_provider.dart';
-import 'package:flowora/providers/shopping_list_provider.dart';
 import 'package:flowora/providers/inventory_provider.dart';
 import 'package:flowora/services/cooking_service.dart';
 import 'package:flowora/widgets/meal_slot_card.dart';
@@ -39,13 +38,6 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Meal Planner', style: AppTextStyles.heading2),
-        actions: [
-          TextButton.icon(
-            onPressed: () => _generateShoppingList(),
-            icon: const Icon(Icons.shopping_cart),
-            label: const Text('Shopping List'),
-          ),
-        ],
       ),
       body: Column(
         children: [
@@ -143,7 +135,21 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
     );
   }
 
+  bool get _isPastDate {
+    final today = DateTime.now();
+    final selected = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    final todayStart = DateTime(today.year, today.month, today.day);
+    return selected.isBefore(todayStart);
+  }
+
   void _selectRecipe(String mealType) {
+    if (_isPastDate) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cannot modify past dates')),
+      );
+      return;
+    }
+
     final recipes = ref.read(recipeProvider);
     if (recipes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -158,6 +164,11 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
       return;
     }
 
+    // Check current assignment before opening sheet
+    final currentPlan = ref.read(mealPlanProvider.notifier).getPlanForDate(_selectedDate);
+    final currentRecipeId = currentPlan?.getRecipeIdForMeal(mealType);
+    final hasMealAssigned = currentRecipeId != null;
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -171,18 +182,28 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
           children: [
             Text('Select for $mealType', style: AppTextStyles.heading3),
             const SizedBox(height: 12),
-            // Remove option
-            ListTile(
-              leading: const Icon(Icons.close, color: AppColors.error),
-              title: const Text('Remove meal'),
-              onTap: () {
-                ref
-                    .read(mealPlanProvider.notifier)
-                    .assignMeal(_selectedDate, mealType, null);
-                Navigator.pop(ctx);
-              },
-            ),
-            const Divider(),
+            if (hasMealAssigned)
+              ListTile(
+                leading: const Icon(Icons.close, color: AppColors.error),
+                title: const Text('Remove meal'),
+                onTap: () {
+                  CookingService(ref).onMealRemoved(currentRecipeId);
+
+                  ref
+                      .read(mealPlanProvider.notifier)
+                      .assignMeal(_selectedDate, mealType, null);
+                  Navigator.pop(ctx);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Meal removed. Shopping list & expenses updated.'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+            if (hasMealAssigned)
+              const Divider(),
             Flexible(
               child: ListView.builder(
                 shrinkWrap: true,
@@ -212,11 +233,7 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
                             content: Text(
                               '${stock.missing} missing ingredient(s) added to shopping list: ${stock.missingNames.join(", ")}',
                             ),
-                            action: SnackBarAction(
-                              label: 'View',
-                              onPressed: () => context.push('/shopping-list'),
-                            ),
-                            duration: const Duration(seconds: 4),
+                            duration: const Duration(seconds: 3),
                           ),
                         );
                       }
@@ -231,24 +248,4 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
     );
   }
 
-  void _generateShoppingList() {
-    final plans = ref.read(mealPlanProvider);
-    final recipes = ref.read(recipeProvider);
-
-    final allRecipeIds = <String?>[];
-    for (final plan in plans) {
-      allRecipeIds.addAll([
-        plan.breakfastRecipeId,
-        plan.lunchRecipeId,
-        plan.dinnerRecipeId,
-        plan.snackRecipeId,
-      ]);
-    }
-
-    ref
-        .read(shoppingListProvider.notifier)
-        .generateFromMealPlan(recipes, allRecipeIds);
-
-    context.push('/shopping-list');
-  }
 }

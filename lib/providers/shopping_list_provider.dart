@@ -18,8 +18,10 @@ class ShoppingListNotifier extends StateNotifier<List<ShoppingItem>> {
       try {
         final data = await ApiClient.getShoppingList();
         final items = data.map((e) => ShoppingItem.fromJson(Map<String, dynamic>.from(e))).toList();
-        state = items;
-        await _saveToHive();
+        if (items.isNotEmpty) {
+          state = items;
+          await _saveToHive();
+        }
       } catch (_) {}
     }
   }
@@ -41,7 +43,26 @@ class ShoppingListNotifier extends StateNotifier<List<ShoppingItem>> {
   }
 
   Future<void> addItem(ShoppingItem item) async {
-    state = [...state, item];
+    // Merge if same unchecked item exists
+    final existingIdx = state.indexWhere((i) =>
+        i.name.toLowerCase() == item.name.toLowerCase() && !i.isChecked);
+
+    if (existingIdx >= 0) {
+      final existing = state[existingIdx];
+      final oldQty = double.tryParse(existing.quantity) ?? 0;
+      final newQty = double.tryParse(item.quantity) ?? 0;
+      final totalQty = oldQty + newQty;
+      final merged = existing.copyWith(
+        quantity: totalQty > 0
+            ? (totalQty == totalQty.roundToDouble()
+                ? totalQty.toInt().toString()
+                : totalQty.toStringAsFixed(1))
+            : existing.quantity,
+      );
+      state = [...state]..[existingIdx] = merged;
+    } else {
+      state = [...state, item];
+    }
     _saveToHive();
 
     if (ApiClient.isLoggedIn) {
@@ -52,6 +73,33 @@ class ShoppingListNotifier extends StateNotifier<List<ShoppingItem>> {
         _saveToHive();
       } catch (_) {}
     }
+  }
+
+  /// Add multiple items at once, merging duplicates
+  void addItems(List<ShoppingItem> items) {
+    var updated = [...state];
+    for (final item in items) {
+      final existingIdx = updated.indexWhere((i) =>
+          i.name.toLowerCase() == item.name.toLowerCase() && !i.isChecked);
+
+      if (existingIdx >= 0) {
+        final existing = updated[existingIdx];
+        final oldQty = double.tryParse(existing.quantity) ?? 0;
+        final newQty = double.tryParse(item.quantity) ?? 0;
+        final totalQty = oldQty + newQty;
+        updated[existingIdx] = existing.copyWith(
+          quantity: totalQty > 0
+              ? (totalQty == totalQty.roundToDouble()
+                  ? totalQty.toInt().toString()
+                  : totalQty.toStringAsFixed(1))
+              : existing.quantity,
+        );
+      } else {
+        updated.add(item);
+      }
+    }
+    state = updated;
+    _saveToHive();
   }
 
   Future<void> updateItem(ShoppingItem updated) async {

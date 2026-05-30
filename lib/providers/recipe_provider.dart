@@ -17,8 +17,11 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
       try {
         final data = await ApiClient.getRecipes();
         final recipes = data.map((e) => Recipe.fromJson(Map<String, dynamic>.from(e))).toList();
-        state = recipes;
-        await _saveToHive();
+        // Only overwrite if server has data; keep local if server is empty
+        if (recipes.isNotEmpty) {
+          state = recipes;
+          await _saveToHive();
+        }
       } catch (_) {}
     }
   }

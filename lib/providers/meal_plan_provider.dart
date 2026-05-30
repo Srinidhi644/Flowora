@@ -18,8 +18,10 @@ class MealPlanNotifier extends StateNotifier<List<MealPlan>> {
       try {
         final data = await ApiClient.getMealPlans();
         final plans = data.map((e) => MealPlan.fromJson(Map<String, dynamic>.from(e))).toList();
-        state = plans;
-        await _saveToHive();
+        if (plans.isNotEmpty) {
+          state = plans;
+          await _saveToHive();
+        }
       } catch (_) {}
     }
   }
