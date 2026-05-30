@@ -10,6 +10,10 @@ class AppTheme {
         colorSchemeSeed: AppColors.primary,
         scaffoldBackgroundColor: AppColors.backgroundLight,
         fontFamily: 'Poppins',
+        textTheme: const TextTheme().apply(
+          bodyColor: AppColors.textDark,
+          displayColor: AppColors.textDark,
+        ),
         appBarTheme: const AppBarTheme(
           centerTitle: false,
           elevation: 0,
@@ -56,6 +60,10 @@ class AppTheme {
         colorSchemeSeed: AppColors.primary,
         scaffoldBackgroundColor: AppColors.backgroundDark,
         fontFamily: 'Poppins',
+        textTheme: const TextTheme().apply(
+          bodyColor: AppColors.textWhite,
+          displayColor: AppColors.textWhite,
+        ),
         appBarTheme: const AppBarTheme(
           centerTitle: false,
           elevation: 0,

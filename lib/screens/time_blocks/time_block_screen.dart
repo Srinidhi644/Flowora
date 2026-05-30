@@ -5,6 +5,9 @@ import 'package:flowora/core/theme/app_colors.dart';
 import 'package:flowora/core/theme/app_text_styles.dart';
 import 'package:flowora/core/utils/date_utils.dart';
 import 'package:flowora/providers/time_block_provider.dart';
+import 'package:flowora/providers/meal_plan_provider.dart';
+import 'package:flowora/providers/recipe_provider.dart';
+import 'package:flowora/services/cooking_service.dart';
 import 'package:flowora/widgets/time_block_card.dart';
 import 'package:flowora/widgets/empty_state.dart';
 
@@ -17,6 +20,44 @@ class TimeBlockScreen extends ConsumerStatefulWidget {
 
 class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
   DateTime _selectedDate = DateTime.now();
+
+  void _onToggleComplete(block) {
+    final wasComplete = block.isComplete;
+    ref.read(timeBlockProvider.notifier).toggleComplete(block.id);
+
+    // If marking as complete (not unchecking) and it's a cooking block,
+    // deduct ingredients from inventory
+    if (!wasComplete && block.type == 'Cooking') {
+      // Try to find the recipe from today's meal plan
+      final mealPlan = ref.read(mealPlanProvider.notifier).getPlanForDate(block.date);
+      if (mealPlan != null) {
+        final cookingService = CookingService(ref);
+        // Check all meal slots for a matching recipe
+        final recipeIds = [
+          mealPlan.breakfastRecipeId,
+          mealPlan.lunchRecipeId,
+          mealPlan.dinnerRecipeId,
+          mealPlan.snackRecipeId,
+        ].where((id) => id != null);
+
+        // Find recipe whose name matches the block label
+        for (final recipeId in recipeIds) {
+          final recipe = ref.read(recipeProvider.notifier).getById(recipeId!);
+          if (recipe != null &&
+              block.label.toLowerCase().contains(recipe.name.toLowerCase())) {
+            cookingService.onMealCooked(recipeId);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Inventory updated for ${recipe.name}'),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+            break;
+          }
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +168,11 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
                           child: const Icon(Icons.delete_outline,
                               color: Colors.white),
                         ),
-                        child: TimeBlockCard(block: block),
+                        child: TimeBlockCard(
+                          block: block,
+                          onToggleComplete: () =>
+                              _onToggleComplete(block),
+                        ),
                       );
                     },
                   ),

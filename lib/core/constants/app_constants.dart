@@ -11,6 +11,8 @@ class AppConstants {
   static const String habitsBox = 'habits';
   static const String mealPlanBox = 'mealPlan';
   static const String shoppingListBox = 'shoppingList';
+  static const String inventoryBox = 'inventory';
+  static const String expensesBox = 'expenses';
   static const String settingsBox = 'settings';
 
   // Settings keys
@@ -46,5 +48,17 @@ class AppConstants {
     'Lunch',
     'Dinner',
     'Snack',
+  ];
+
+  // Expense categories
+  static const List<String> expenseCategories = [
+    'Groceries',
+    'Dining Out',
+    'Transport',
+    'Shopping',
+    'Bills',
+    'Health',
+    'Entertainment',
+    'Other',
   ];
 }

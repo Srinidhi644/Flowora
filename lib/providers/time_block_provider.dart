@@ -76,6 +76,21 @@ class TimeBlockNotifier extends StateNotifier<List<TimeBlock>> {
     }
   }
 
+  Future<void> toggleComplete(String id) async {
+    state = state.map((b) {
+      if (b.id == id) return b.copyWith(isComplete: !b.isComplete);
+      return b;
+    }).toList();
+    _saveToHive();
+
+    if (ApiClient.isLoggedIn) {
+      final block = state.firstWhere((b) => b.id == id);
+      try {
+        await ApiClient.updateTimeBlock(id, block.toJson());
+      } catch (_) {}
+    }
+  }
+
   List<TimeBlock> blocksForDate(DateTime date) {
     return state
         .where((b) => AppDateUtils.isSameDay(b.date, date))

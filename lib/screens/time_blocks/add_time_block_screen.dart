@@ -18,6 +18,7 @@ class AddTimeBlockScreen extends ConsumerStatefulWidget {
 class _AddTimeBlockScreenState extends ConsumerState<AddTimeBlockScreen> {
   final _labelController = TextEditingController();
   String _type = 'Work';
+  bool _isTask = false;
   TimeOfDay _startTime = const TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 10, minute: 0);
   DateTime _date = DateTime.now();
@@ -36,8 +37,9 @@ class _AddTimeBlockScreenState extends ConsumerState<AddTimeBlockScreen> {
             startMinute: _startTime.minute,
             endHour: _endTime.hour,
             endMinute: _endTime.minute,
-            type: _type,
+            type: _isTask ? 'Task' : _type,
             label: _labelController.text.trim(),
+            isTask: _isTask,
           ),
         );
     context.pop();
@@ -86,6 +88,24 @@ class _AddTimeBlockScreenState extends ConsumerState<AddTimeBlockScreen> {
             ),
             const SizedBox(height: 24),
 
+            // Task toggle
+            SwitchListTile(
+              title: const Text('This is a task'),
+              subtitle: const Text('Tasks show completion status'),
+              value: _isTask,
+              onChanged: (v) => setState(() => _isTask = v),
+              secondary: Icon(
+                _isTask ? Icons.check_circle : Icons.schedule,
+                color: _isTask ? AppColors.success : AppColors.primary,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              tileColor: Theme.of(context).inputDecorationTheme.fillColor,
+            ),
+            const SizedBox(height: 24),
+
+            if (!_isTask) ...[
             Text('Type', style: AppTextStyles.label),
             const SizedBox(height: 8),
             Wrap(
@@ -130,6 +150,7 @@ class _AddTimeBlockScreenState extends ConsumerState<AddTimeBlockScreen> {
               }).toList(),
             ),
             const SizedBox(height: 24),
+            ],
 
             Text('Time', style: AppTextStyles.label),
             const SizedBox(height: 8),

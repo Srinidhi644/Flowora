@@ -8,6 +8,7 @@ class ShoppingItem {
   final String quantity;
   final String unit;
   final bool isChecked;
+  final double? price;
   final ShoppingItemSource source;
 
   ShoppingItem({
@@ -16,6 +17,7 @@ class ShoppingItem {
     this.quantity = '',
     this.unit = '',
     this.isChecked = false,
+    this.price,
     this.source = ShoppingItemSource.manual,
   }) : id = id ?? const Uuid().v4();
 
@@ -24,6 +26,7 @@ class ShoppingItem {
     String? quantity,
     String? unit,
     bool? isChecked,
+    double? price,
     ShoppingItemSource? source,
   }) {
     return ShoppingItem(
@@ -32,6 +35,7 @@ class ShoppingItem {
       quantity: quantity ?? this.quantity,
       unit: unit ?? this.unit,
       isChecked: isChecked ?? this.isChecked,
+      price: price ?? this.price,
       source: source ?? this.source,
     );
   }
@@ -42,6 +46,7 @@ class ShoppingItem {
         'quantity': quantity,
         'unit': unit,
         'isChecked': isChecked,
+        'price': price,
         'source': source.index,
       };
 
@@ -51,6 +56,7 @@ class ShoppingItem {
         quantity: json['quantity'] ?? '',
         unit: json['unit'] ?? '',
         isChecked: json['isChecked'] ?? false,
+        price: json['price']?.toDouble(),
         source: ShoppingItemSource.values[json['source'] ?? 1],
       );
 }

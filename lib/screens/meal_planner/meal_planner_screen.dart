@@ -8,6 +8,8 @@ import 'package:flowora/core/constants/app_constants.dart';
 import 'package:flowora/providers/meal_plan_provider.dart';
 import 'package:flowora/providers/recipe_provider.dart';
 import 'package:flowora/providers/shopping_list_provider.dart';
+import 'package:flowora/providers/inventory_provider.dart';
+import 'package:flowora/services/cooking_service.dart';
 import 'package:flowora/widgets/meal_slot_card.dart';
 
 class MealPlannerScreen extends ConsumerStatefulWidget {
@@ -196,7 +198,28 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
                       ref
                           .read(mealPlanProvider.notifier)
                           .assignMeal(_selectedDate, mealType, recipe.id);
+
+                      // Check inventory and add missing to shopping list
+                      final cookingService = CookingService(ref);
+                      cookingService.onMealAssigned(recipe.id);
+
+                      final stock = cookingService.checkStock(recipe.id);
                       Navigator.pop(ctx);
+
+                      if (stock.missing > 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '${stock.missing} missing ingredient(s) added to shopping list: ${stock.missingNames.join(", ")}',
+                            ),
+                            action: SnackBarAction(
+                              label: 'View',
+                              onPressed: () => context.push('/shopping-list'),
+                            ),
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                      }
                     },
                   );
                 },

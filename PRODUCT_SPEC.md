@@ -96,10 +96,17 @@ Suggests weekly meals based on:
 
 ---
 
-## Next Steps
+## Current Status (v1.0 MVP — Shipped)
 
-- [ ] Define MVP feature list
+- [x] Define MVP feature list
+- [x] Flutter frontend (12 screens)
+- [x] Spring Boot backend with JWT auth
+- [x] Unified Schedule (tasks merged into time blocks with status colors)
+- [x] Inventory Tracker (fridge/pantry/freezer with expiry alerts)
+- [x] Expense Tracker (daily/weekly/monthly with category breakdowns)
+- [x] Dark/Light mode (fully theme-aware)
+- [x] Deployed to Render (backend) + APK built
 - [ ] Create user flow / wireframes
 - [ ] Deep-dive on Cooking Hub (differentiator)
 - [ ] Plan monetization strategy (freemium, one-time purchase, etc.)
-- [ ] Finalize tech stack
+- [ ] AI integrations (Phase 2)

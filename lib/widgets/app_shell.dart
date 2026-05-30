@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flowora/providers/task_provider.dart';
 import 'package:flowora/providers/time_block_provider.dart';
-import 'package:flowora/providers/habit_provider.dart';
 import 'package:flowora/providers/meal_plan_provider.dart';
 import 'package:flowora/providers/recipe_provider.dart';
 import 'package:flowora/providers/shopping_list_provider.dart';
+import 'package:flowora/providers/expense_provider.dart';
 
 class AppShell extends ConsumerWidget {
   final Widget child;
@@ -16,20 +15,19 @@ class AppShell extends ConsumerWidget {
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     if (location == '/') return 0;
-    if (location.startsWith('/tasks')) return 1;
-    if (location.startsWith('/time-blocks')) return 2;
-    if (location.startsWith('/recipes')) return 3;
-    if (location.startsWith('/habits')) return 4;
+    if (location.startsWith('/time-blocks')) return 1;
+    if (location.startsWith('/recipes')) return 2;
+    if (location.startsWith('/kitchen')) return 3;
+    if (location.startsWith('/expenses')) return 4;
     return 0;
   }
 
   void _refreshAllProviders(WidgetRef ref) {
-    ref.invalidate(taskProvider);
     ref.invalidate(timeBlockProvider);
-    ref.invalidate(habitProvider);
     ref.invalidate(mealPlanProvider);
     ref.invalidate(recipeProvider);
     ref.invalidate(shoppingListProvider);
+    ref.invalidate(expenseProvider);
   }
 
   @override
@@ -38,8 +36,8 @@ class AppShell extends ConsumerWidget {
       body: child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex(context),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (index) {
-          // Refresh providers when switching tabs so data is always fresh
           _refreshAllProviders(ref);
 
           switch (index) {
@@ -47,16 +45,16 @@ class AppShell extends ConsumerWidget {
               context.go('/');
               break;
             case 1:
-              context.go('/tasks');
-              break;
-            case 2:
               context.go('/time-blocks');
               break;
-            case 3:
+            case 2:
               context.go('/recipes');
               break;
+            case 3:
+              context.go('/kitchen');
+              break;
             case 4:
-              context.go('/habits');
+              context.go('/expenses');
               break;
           }
         },
@@ -65,11 +63,6 @@ class AppShell extends ConsumerWidget {
             icon: Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(Icons.dashboard),
             label: 'Today',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.check_circle_outline),
-            selectedIcon: Icon(Icons.check_circle),
-            label: 'Tasks',
           ),
           NavigationDestination(
             icon: Icon(Icons.calendar_view_day_outlined),
@@ -82,9 +75,14 @@ class AppShell extends ConsumerWidget {
             label: 'Recipes',
           ),
           NavigationDestination(
-            icon: Icon(Icons.trending_up_outlined),
-            selectedIcon: Icon(Icons.trending_up),
-            label: 'Habits',
+            icon: Icon(Icons.kitchen_outlined),
+            selectedIcon: Icon(Icons.kitchen),
+            label: 'Kitchen',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet),
+            label: 'Expenses',
           ),
         ],
       ),

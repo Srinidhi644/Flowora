@@ -4,16 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:flowora/core/theme/app_colors.dart';
 import 'package:flowora/core/theme/app_text_styles.dart';
 import 'package:flowora/core/utils/date_utils.dart';
-import 'package:flowora/providers/task_provider.dart';
 import 'package:flowora/providers/time_block_provider.dart';
-import 'package:flowora/providers/habit_provider.dart';
 import 'package:flowora/providers/meal_plan_provider.dart';
 import 'package:flowora/providers/recipe_provider.dart';
+import 'package:flowora/providers/expense_provider.dart';
+import 'package:flowora/services/cooking_service.dart';
 import 'package:flowora/widgets/section_header.dart';
-import 'package:flowora/widgets/task_card.dart';
 import 'package:flowora/widgets/time_block_card.dart';
 import 'package:flowora/widgets/meal_slot_card.dart';
-import 'package:flowora/widgets/habit_tile.dart';
 import 'package:flowora/core/constants/app_constants.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
@@ -46,21 +44,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   }
 
   void _refreshAll() {
-    ref.invalidate(taskProvider);
     ref.invalidate(timeBlockProvider);
-    ref.invalidate(habitProvider);
     ref.invalidate(mealPlanProvider);
     ref.invalidate(recipeProvider);
+    ref.invalidate(expenseProvider);
   }
 
   @override
   Widget build(BuildContext context) {
-    final todayTasks = ref.watch(todayTasksProvider);
-    final overdueTasks = ref.watch(overdueTasksProvider);
     final todayBlocks = ref.watch(todayBlocksProvider);
-    final habits = ref.watch(habitProvider);
     final todayMeal = ref.watch(todayMealPlanProvider);
     final recipes = ref.watch(recipeProvider);
+    final todaySpent = ref.watch(todayExpensesProvider);
+    final completedBlocks = todayBlocks.where((b) => b.isComplete).length;
 
     return Scaffold(
       body: SafeArea(
@@ -117,100 +113,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _StatItem(
-                      label: 'Tasks',
-                      value:
-                          '${todayTasks.where((t) => t.isComplete).length}/${todayTasks.length}',
-                      icon: Icons.check_circle_outline,
-                    ),
-                    _StatItem(
                       label: 'Schedule',
-                      value: '${todayBlocks.length} blocks',
-                      icon: Icons.calendar_view_day,
+                      value: '$completedBlocks/${todayBlocks.length}',
+                      icon: Icons.check_circle_outline,
                     ),
                     _StatItem(
                       label: 'Meals',
                       value: '${todayMeal?.mealsPlanned ?? 0}/4',
                       icon: Icons.restaurant,
                     ),
+                    _StatItem(
+                      label: 'Spent',
+                      value: '₹${todaySpent.toStringAsFixed(0)}',
+                      icon: Icons.account_balance_wallet,
+                    ),
                   ],
                 ),
               ),
             ),
-
-            // Overdue tasks
-            if (overdueTasks.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: 'Overdue',
-                  actionText: '${overdueTasks.length} tasks',
-                ),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final task = overdueTasks[index];
-                    return TaskCard(
-                      task: task,
-                      onToggle: () =>
-                          ref.read(taskProvider.notifier).toggleComplete(task.id),
-                      onTap: () => context.push('/tasks/edit', extra: task.id),
-                      onDelete: () =>
-                          ref.read(taskProvider.notifier).deleteTask(task.id),
-                    );
-                  },
-                  childCount: overdueTasks.length > 3 ? 3 : overdueTasks.length,
-                ),
-              ),
-            ],
-
-            // Today's tasks
-            SliverToBoxAdapter(
-              child: SectionHeader(
-                title: "Today's Tasks",
-                actionText: 'See all',
-                onAction: () => context.go('/tasks'),
-              ),
-            ),
-            if (todayTasks.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardTheme.color,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.task_alt,
-                            color: AppColors.textGrey, size: 32),
-                        const SizedBox(height: 8),
-                        Text('No tasks for today',
-                            style: AppTextStyles.bodyMedium
-                                .copyWith(color: AppColors.textGrey)),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-            else
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final task = todayTasks[index];
-                    return TaskCard(
-                      task: task,
-                      onToggle: () =>
-                          ref.read(taskProvider.notifier).toggleComplete(task.id),
-                      onTap: () => context.push('/tasks/edit', extra: task.id),
-                      onDelete: () =>
-                          ref.read(taskProvider.notifier).deleteTask(task.id),
-                    );
-                  },
-                  childCount: todayTasks.length > 5 ? 5 : todayTasks.length,
-                ),
-              ),
 
             // Schedule
             SliverToBoxAdapter(
@@ -246,9 +166,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
             else
               SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => TimeBlockCard(block: todayBlocks[index]),
+                  (context, index) => TimeBlockCard(
+                    block: todayBlocks[index],
+                    onToggleComplete: () => ref
+                        .read(timeBlockProvider.notifier)
+                        .toggleComplete(todayBlocks[index].id),
+                  ),
                   childCount:
-                      todayBlocks.length > 4 ? 4 : todayBlocks.length,
+                      todayBlocks.length > 6 ? 6 : todayBlocks.length,
                 ),
               ),
 
@@ -277,58 +202,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                 childCount: AppConstants.mealTypes.length,
               ),
             ),
-
-            // Habits
-            SliverToBoxAdapter(
-              child: SectionHeader(
-                title: 'Habits',
-                actionText: 'See all',
-                onAction: () => context.go('/habits'),
-              ),
-            ),
-            if (habits.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardTheme.color,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(Icons.trending_up,
-                            color: AppColors.textGrey, size: 32),
-                        const SizedBox(height: 8),
-                        Text('No habits tracked yet',
-                            style: AppTextStyles.bodyMedium
-                                .copyWith(color: AppColors.textGrey)),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: HabitTile(
-                          habit: habits[index],
-                          onToggle: () => ref
-                              .read(habitProvider.notifier)
-                              .toggleTodayLog(habits[index].id),
-                        ),
-                      );
-                    },
-                    childCount: habits.length > 5 ? 5 : habits.length,
-                  ),
-                ),
-              ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
@@ -359,17 +232,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _QuickAddButton(
-                  icon: Icons.check_circle,
-                  label: 'Task',
-                  color: AppColors.primary,
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    context.push('/tasks/add');
-                  },
-                ),
-                _QuickAddButton(
                   icon: Icons.calendar_view_day,
-                  label: 'Time Block',
+                  label: 'Schedule',
                   color: AppColors.work,
                   onTap: () {
                     Navigator.pop(ctx);
@@ -383,6 +247,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   onTap: () {
                     Navigator.pop(ctx);
                     context.push('/recipes/add');
+                  },
+                ),
+                _QuickAddButton(
+                  icon: Icons.account_balance_wallet,
+                  label: 'Expense',
+                  color: AppColors.error,
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    context.push('/expenses');
                   },
                 ),
               ],

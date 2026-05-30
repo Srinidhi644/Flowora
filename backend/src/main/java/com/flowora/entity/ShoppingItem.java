@@ -25,6 +25,8 @@ public class ShoppingItem {
     @Builder.Default
     private boolean checked = false;
 
+    private Double price;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Source source = Source.MANUAL;
