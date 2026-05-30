@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flowora/core/theme/app_colors.dart';
 import 'package:flowora/core/theme/app_text_styles.dart';
+import 'package:flowora/providers/shopping_list_provider.dart';
 import 'package:flowora/screens/inventory/inventory_screen.dart';
 import 'package:flowora/screens/shopping_list/shopping_list_screen.dart';
 
@@ -20,6 +21,10 @@ class _KitchenScreenState extends ConsumerState<KitchenScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // Refresh shared data from API
+    Future.microtask(() {
+      ref.read(shoppingListProvider.notifier).refresh();
+    });
   }
 
   @override

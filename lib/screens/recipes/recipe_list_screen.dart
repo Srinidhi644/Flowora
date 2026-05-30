@@ -18,6 +18,13 @@ class _RecipeListScreenState extends ConsumerState<RecipeListScreen> {
   String _searchQuery = '';
 
   @override
+  void initState() {
+    super.initState();
+    // Refresh recipes from API to get other users' changes
+    Future.microtask(() => ref.read(recipeProvider.notifier).refresh());
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
