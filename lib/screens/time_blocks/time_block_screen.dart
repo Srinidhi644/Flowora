@@ -127,7 +127,12 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
                           child: const Icon(Icons.delete_outline,
                               color: Colors.white),
                         ),
-                        child: TimeBlockCard(block: block),
+                        child: TimeBlockCard(
+                          block: block,
+                          onToggleComplete: () => ref
+                              .read(timeBlockProvider.notifier)
+                              .toggleComplete(block.id),
+                        ),
                       );
                     },
                   ),
