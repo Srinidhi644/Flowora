@@ -57,34 +57,44 @@ class CookingService {
     final recipe = ref.read(recipeProvider.notifier).getById(recipeId);
     if (recipe == null) return;
 
-    final shoppingList = ref.read(shoppingListProvider);
-    final shoppingNotifier = ref.read(shoppingListProvider.notifier);
-    final expenses = ref.read(expenseProvider);
-    final expenseNotifier = ref.read(expenseProvider.notifier);
+    // Collect all IDs to delete first, then delete
+    final shoppingList = List.of(ref.read(shoppingListProvider));
+    final expenses = List.of(ref.read(expenseProvider));
+    final today = DateTime.now();
+
+    final shoppingIdsToDelete = <String>[];
+    final expenseIdsToDelete = <String>[];
 
     for (final ingredient in recipe.ingredients) {
       final ingName = ingredient.name.toLowerCase();
 
-      // Remove from shopping list (auto-added, unchecked items)
-      final shoppingItem = shoppingList.where((item) =>
-          item.name.toLowerCase() == ingName &&
-          item.source == ShoppingItemSource.auto &&
-          !item.isChecked);
-      for (final item in shoppingItem) {
-        shoppingNotifier.deleteItem(item.id);
+      // Find auto-added shopping items to remove
+      for (final item in shoppingList) {
+        if (item.name.toLowerCase() == ingName &&
+            item.source == ShoppingItemSource.auto &&
+            !item.isChecked) {
+          shoppingIdsToDelete.add(item.id);
+        }
       }
 
-      // Remove auto-created expense (Groceries category, same name, today)
-      final today = DateTime.now();
-      final matchingExpense = expenses.where((e) =>
-          e.title.toLowerCase() == ingName &&
-          e.category == 'Groceries' &&
-          e.date.year == today.year &&
-          e.date.month == today.month &&
-          e.date.day == today.day);
-      for (final e in matchingExpense) {
-        expenseNotifier.deleteExpense(e.id);
+      // Find auto-created expenses to remove
+      for (final e in expenses) {
+        if (e.title.toLowerCase() == ingName &&
+            e.category == 'Groceries' &&
+            e.date.year == today.year &&
+            e.date.month == today.month &&
+            e.date.day == today.day) {
+          expenseIdsToDelete.add(e.id);
+        }
       }
+    }
+
+    // Now delete
+    for (final id in shoppingIdsToDelete) {
+      ref.read(shoppingListProvider.notifier).deleteItem(id);
+    }
+    for (final id in expenseIdsToDelete) {
+      ref.read(expenseProvider.notifier).deleteExpense(id);
     }
   }
 

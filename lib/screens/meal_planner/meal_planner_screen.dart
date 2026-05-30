@@ -172,6 +172,11 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
       return;
     }
 
+    // Check current assignment before opening sheet
+    final currentPlan = ref.read(mealPlanProvider.notifier).getPlanForDate(_selectedDate);
+    final currentRecipeId = currentPlan?.getRecipeIdForMeal(mealType);
+    final hasMealAssigned = currentRecipeId != null;
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -185,37 +190,27 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
           children: [
             Text('Select for $mealType', style: AppTextStyles.heading3),
             const SizedBox(height: 12),
-            // Remove option — only show if meal is assigned
-            if (ref.read(mealPlanProvider.notifier).getPlanForDate(_selectedDate)
-                ?.getRecipeIdForMeal(mealType) != null)
-            ListTile(
-              leading: const Icon(Icons.close, color: AppColors.error),
-              title: const Text('Remove meal'),
-              onTap: () {
-                // Get current recipe before removing
-                final plan = ref.read(mealPlanProvider.notifier).getPlanForDate(_selectedDate);
-                final currentRecipeId = plan?.getRecipeIdForMeal(mealType);
-
-                // Reverse: remove from shopping list + expenses
-                if (currentRecipeId != null) {
+            if (hasMealAssigned)
+              ListTile(
+                leading: const Icon(Icons.close, color: AppColors.error),
+                title: const Text('Remove meal'),
+                onTap: () {
                   CookingService(ref).onMealRemoved(currentRecipeId);
-                }
 
-                ref
-                    .read(mealPlanProvider.notifier)
-                    .assignMeal(_selectedDate, mealType, null);
-                Navigator.pop(ctx);
+                  ref
+                      .read(mealPlanProvider.notifier)
+                      .assignMeal(_selectedDate, mealType, null);
+                  Navigator.pop(ctx);
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Meal removed. Shopping list & expenses updated.'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-            if (ref.read(mealPlanProvider.notifier).getPlanForDate(_selectedDate)
-                ?.getRecipeIdForMeal(mealType) != null)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Meal removed. Shopping list & expenses updated.'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+            if (hasMealAssigned)
               const Divider(),
             Flexible(
               child: ListView.builder(
