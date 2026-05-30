@@ -13,17 +13,6 @@ class ShoppingListNotifier extends StateNotifier<List<ShoppingItem>> {
 
   Future<void> _loadItems() async {
     await _loadFromHive();
-
-    if (ApiClient.isLoggedIn) {
-      try {
-        final data = await ApiClient.getShoppingList();
-        final items = data.map((e) => ShoppingItem.fromJson(Map<String, dynamic>.from(e))).toList();
-        if (items.isNotEmpty) {
-          state = items;
-          await _saveToHive();
-        }
-      } catch (_) {}
-    }
   }
 
   Future<void> _loadFromHive() async {

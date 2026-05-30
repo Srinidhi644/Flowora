@@ -12,22 +12,7 @@ class TaskNotifier extends StateNotifier<List<Task>> {
   }
 
   Future<void> _loadTasks() async {
-    // Load from local first (instant)
     await _loadFromHive();
-
-    // Then sync from API
-    if (ApiClient.isLoggedIn) {
-      try {
-        final data = await ApiClient.getTasks();
-        final tasks = data.map((e) => Task.fromJson(Map<String, dynamic>.from(e))).toList();
-        if (tasks.isNotEmpty) {
-          state = tasks;
-          await _saveToHive();
-        }
-      } catch (_) {
-        // Offline — use local data
-      }
-    }
   }
 
   Future<void> _loadFromHive() async {

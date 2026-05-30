@@ -13,17 +13,6 @@ class MealPlanNotifier extends StateNotifier<List<MealPlan>> {
 
   Future<void> _loadPlans() async {
     await _loadFromHive();
-
-    if (ApiClient.isLoggedIn) {
-      try {
-        final data = await ApiClient.getMealPlans();
-        final plans = data.map((e) => MealPlan.fromJson(Map<String, dynamic>.from(e))).toList();
-        if (plans.isNotEmpty) {
-          state = plans;
-          await _saveToHive();
-        }
-      } catch (_) {}
-    }
   }
 
   Future<void> _loadFromHive() async {

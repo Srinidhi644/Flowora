@@ -12,18 +12,6 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
 
   Future<void> _loadRecipes() async {
     await _loadFromHive();
-
-    if (ApiClient.isLoggedIn) {
-      try {
-        final data = await ApiClient.getRecipes();
-        final recipes = data.map((e) => Recipe.fromJson(Map<String, dynamic>.from(e))).toList();
-        // Only overwrite if server has data; keep local if server is empty
-        if (recipes.isNotEmpty) {
-          state = recipes;
-          await _saveToHive();
-        }
-      } catch (_) {}
-    }
   }
 
   Future<void> _loadFromHive() async {

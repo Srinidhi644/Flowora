@@ -12,18 +12,8 @@ class TimeBlockNotifier extends StateNotifier<List<TimeBlock>> {
   }
 
   Future<void> _loadBlocks() async {
+    // Hive is the source of truth — never overwrite with API data
     await _loadFromHive();
-
-    if (ApiClient.isLoggedIn) {
-      try {
-        final data = await ApiClient.getTimeBlocks();
-        final blocks = data.map((e) => TimeBlock.fromJson(Map<String, dynamic>.from(e))).toList();
-        if (blocks.isNotEmpty) {
-          state = blocks;
-          await _saveToHive();
-        }
-      } catch (_) {}
-    }
   }
 
   Future<void> _loadFromHive() async {
