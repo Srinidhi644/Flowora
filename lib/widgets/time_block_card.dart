@@ -76,7 +76,6 @@ class TimeBlockCard extends StatelessWidget {
                     block.label.isNotEmpty ? block.label : block.type,
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontWeight: FontWeight.w600,
-                      decoration: block.isComplete ? TextDecoration.lineThrough : null,
                     ),
                   ),
                   Row(
