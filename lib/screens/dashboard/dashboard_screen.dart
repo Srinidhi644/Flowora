@@ -44,10 +44,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   }
 
   void _refreshAll() {
-    ref.invalidate(timeBlockProvider);
-    ref.invalidate(mealPlanProvider);
-    ref.invalidate(recipeProvider);
-    ref.invalidate(expenseProvider);
+    // No-op: providers auto-update via ref.watch
   }
 
   @override

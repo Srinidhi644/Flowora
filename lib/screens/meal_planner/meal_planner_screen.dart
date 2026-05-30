@@ -233,11 +233,7 @@ class _MealPlannerScreenState extends ConsumerState<MealPlannerScreen> {
                             content: Text(
                               '${stock.missing} missing ingredient(s) added to shopping list: ${stock.missingNames.join(", ")}',
                             ),
-                            action: SnackBarAction(
-                              label: 'View',
-                              onPressed: () => context.push('/shopping-list'),
-                            ),
-                            duration: const Duration(seconds: 4),
+                            duration: const Duration(seconds: 3),
                           ),
                         );
                       }
