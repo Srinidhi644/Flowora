@@ -154,6 +154,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                   onTap: () => context.push('/shopping-list'),
                 ),
+                ListTile(
+                  leading: const Icon(Icons.account_balance_wallet,
+                      color: AppColors.error),
+                  title: const Text('Expenses'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onTap: () => context.push('/expenses'),
+                ),
               ],
             ),
           ),

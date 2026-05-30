@@ -6,16 +6,15 @@ import 'package:flowora/services/storage_service.dart';
 import 'package:flowora/screens/onboarding/onboarding_screen.dart';
 import 'package:flowora/screens/auth/login_screen.dart';
 import 'package:flowora/screens/dashboard/dashboard_screen.dart';
-import 'package:flowora/screens/tasks/task_list_screen.dart';
-import 'package:flowora/screens/tasks/add_task_screen.dart';
 import 'package:flowora/screens/time_blocks/time_block_screen.dart';
 import 'package:flowora/screens/time_blocks/add_time_block_screen.dart';
 import 'package:flowora/screens/recipes/recipe_list_screen.dart';
 import 'package:flowora/screens/recipes/recipe_detail_screen.dart';
 import 'package:flowora/screens/recipes/add_recipe_screen.dart';
+import 'package:flowora/screens/inventory/inventory_screen.dart';
 import 'package:flowora/screens/meal_planner/meal_planner_screen.dart';
 import 'package:flowora/screens/shopping_list/shopping_list_screen.dart';
-import 'package:flowora/screens/habits/habit_screen.dart';
+import 'package:flowora/screens/expenses/expense_screen.dart';
 import 'package:flowora/screens/settings/settings_screen.dart';
 import 'package:flowora/widgets/app_shell.dart';
 
@@ -55,10 +54,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const DashboardScreen(),
           ),
           GoRoute(
-            path: '/tasks',
-            builder: (context, state) => const TaskListScreen(),
-          ),
-          GoRoute(
             path: '/time-blocks',
             builder: (context, state) => const TimeBlockScreen(),
           ),
@@ -67,21 +62,14 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const RecipeListScreen(),
           ),
           GoRoute(
-            path: '/habits',
-            builder: (context, state) => const HabitScreen(),
+            path: '/inventory',
+            builder: (context, state) => const InventoryScreen(),
+          ),
+          GoRoute(
+            path: '/expenses',
+            builder: (context, state) => const ExpenseScreen(),
           ),
         ],
-      ),
-      GoRoute(
-        path: '/tasks/add',
-        builder: (context, state) => const AddTaskScreen(),
-      ),
-      GoRoute(
-        path: '/tasks/edit',
-        builder: (context, state) {
-          final taskId = state.extra as String;
-          return AddTaskScreen(taskId: taskId);
-        },
       ),
       GoRoute(
         path: '/time-blocks/add',
