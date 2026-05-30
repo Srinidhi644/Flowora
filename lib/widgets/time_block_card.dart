@@ -45,8 +45,8 @@ class TimeBlockCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Completion checkbox for tasks
-            if (block.isTask) ...[
+            // Completion checkbox for all blocks
+            if (onToggleComplete != null) ...[
               GestureDetector(
                 onTap: onToggleComplete,
                 child: AnimatedContainer(
