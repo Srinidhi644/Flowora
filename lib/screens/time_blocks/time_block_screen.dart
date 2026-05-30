@@ -186,7 +186,7 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
                     buttonText: _isPastDate ? null : 'Add Block',
                     onButtonTap: _isPastDate
                         ? null
-                        : () => context.push('/time-blocks/add'),
+                        : () => context.push('/time-blocks/add', extra: _selectedDate),
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -232,7 +232,7 @@ class _TimeBlockScreenState extends ConsumerState<TimeBlockScreen> {
       floatingActionButton: _isPastDate
           ? null
           : FloatingActionButton(
-              onPressed: () => context.push('/time-blocks/add'),
+              onPressed: () => context.push('/time-blocks/add', extra: _selectedDate),
               child: const Icon(Icons.add),
             ),
     );

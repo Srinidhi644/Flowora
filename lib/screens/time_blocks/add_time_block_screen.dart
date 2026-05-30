@@ -9,7 +9,8 @@ import 'package:flowora/providers/time_block_provider.dart';
 
 class AddTimeBlockScreen extends ConsumerStatefulWidget {
   final String? blockId;
-  const AddTimeBlockScreen({super.key, this.blockId});
+  final DateTime? initialDate;
+  const AddTimeBlockScreen({super.key, this.blockId, this.initialDate});
 
   @override
   ConsumerState<AddTimeBlockScreen> createState() =>
@@ -22,13 +23,14 @@ class _AddTimeBlockScreenState extends ConsumerState<AddTimeBlockScreen> {
   bool _isTask = false;
   TimeOfDay _startTime = const TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _endTime = const TimeOfDay(hour: 10, minute: 0);
-  DateTime _date = DateTime.now();
+  late DateTime _date;
 
   bool get _isEditing => widget.blockId != null;
 
   @override
   void initState() {
     super.initState();
+    _date = widget.initialDate ?? DateTime.now();
     if (_isEditing) {
       final block = ref.read(timeBlockProvider)
           .firstWhere((b) => b.id == widget.blockId);

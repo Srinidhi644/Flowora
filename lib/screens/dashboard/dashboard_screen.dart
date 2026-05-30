@@ -323,7 +323,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   color: AppColors.work,
                   onTap: () {
                     Navigator.pop(ctx);
-                    context.push('/time-blocks/add');
+                    context.push('/time-blocks/add', extra: DateTime.now());
                   },
                 ),
                 _QuickAddButton(

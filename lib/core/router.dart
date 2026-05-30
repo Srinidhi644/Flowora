@@ -73,7 +73,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/time-blocks/add',
-        builder: (context, state) => const AddTimeBlockScreen(),
+        builder: (context, state) {
+          final date = state.extra as DateTime?;
+          return AddTimeBlockScreen(initialDate: date);
+        },
       ),
       GoRoute(
         path: '/time-blocks/edit',
