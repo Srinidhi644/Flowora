@@ -1,9 +1,9 @@
-import 'package:flowora/models/task.dart';
 import 'package:flowora/models/recipe.dart';
 import 'package:flowora/models/time_block.dart';
-import 'package:flowora/models/habit.dart';
 import 'package:flowora/models/meal_plan.dart';
 import 'package:flowora/models/shopping_item.dart';
+import 'package:flowora/models/inventory_item.dart';
+import 'package:flowora/models/expense.dart';
 
 class SeedData {
   SeedData._();
@@ -11,79 +11,6 @@ class SeedData {
   static final DateTime _today = DateTime.now();
   static DateTime _date(int daysFromToday) =>
       DateTime(_today.year, _today.month, _today.day + daysFromToday);
-
-  // ─── Tasks ───────────────────────────────────────────────
-
-  static List<Task> get tasks => [
-        Task(
-          title: 'Review project proposal',
-          description: 'Go through the Q3 project proposal and add comments',
-          dueDate: _date(0),
-          priority: TaskPriority.high,
-          category: TaskCategory.work,
-        ),
-        Task(
-          title: 'Buy groceries for the week',
-          description: 'Check the shopping list before heading out',
-          dueDate: _date(0),
-          priority: TaskPriority.medium,
-          category: TaskCategory.personal,
-        ),
-        Task(
-          title: 'Fix login page bug',
-          description: 'Users report password reset link not working',
-          dueDate: _date(0),
-          priority: TaskPriority.high,
-          category: TaskCategory.work,
-        ),
-        Task(
-          title: 'Call dentist for appointment',
-          dueDate: _date(1),
-          priority: TaskPriority.low,
-          category: TaskCategory.personal,
-        ),
-        Task(
-          title: 'Prepare sprint demo slides',
-          description: 'Include metrics and screenshots',
-          dueDate: _date(1),
-          priority: TaskPriority.high,
-          category: TaskCategory.work,
-        ),
-        Task(
-          title: 'Water the plants',
-          dueDate: _date(0),
-          priority: TaskPriority.low,
-          category: TaskCategory.personal,
-          isComplete: true,
-        ),
-        Task(
-          title: 'Reply to client email',
-          description: 'Follow up on the integration timeline',
-          dueDate: _date(0),
-          priority: TaskPriority.medium,
-          category: TaskCategory.work,
-          isComplete: true,
-        ),
-        Task(
-          title: 'Update portfolio website',
-          dueDate: _date(2),
-          priority: TaskPriority.low,
-          category: TaskCategory.personal,
-        ),
-        Task(
-          title: 'Team standup notes',
-          description: 'Summarize blockers and action items',
-          dueDate: _date(-1),
-          priority: TaskPriority.medium,
-          category: TaskCategory.work,
-        ),
-        Task(
-          title: 'Renew gym membership',
-          dueDate: _date(3),
-          priority: TaskPriority.medium,
-          category: TaskCategory.personal,
-        ),
-      ];
 
   // ─── Recipes ─────────────────────────────────────────────
 
@@ -242,7 +169,7 @@ class SeedData {
     ),
   ];
 
-  // ─── Time Blocks ─────────────────────────────────────────
+  // ─── Time Blocks (Schedule) ──────────────────────────────
 
   static List<TimeBlock> get timeBlocks => [
         TimeBlock(
@@ -261,7 +188,7 @@ class SeedData {
           endHour: 8,
           endMinute: 0,
           type: 'Cooking',
-          label: 'Breakfast Prep',
+          label: 'Breakfast - Overnight Oats',
         ),
         TimeBlock(
           date: _date(0),
@@ -271,6 +198,7 @@ class SeedData {
           endMinute: 30,
           type: 'Deep Work',
           label: 'Feature Development',
+          isTask: true,
         ),
         TimeBlock(
           date: _date(0),
@@ -289,6 +217,7 @@ class SeedData {
           endMinute: 0,
           type: 'Work',
           label: 'Code Reviews & PRs',
+          isTask: true,
         ),
         TimeBlock(
           date: _date(0),
@@ -307,6 +236,7 @@ class SeedData {
           endMinute: 30,
           type: 'Deep Work',
           label: 'Bug Fixes',
+          isTask: true,
         ),
         TimeBlock(
           date: _date(0),
@@ -344,6 +274,7 @@ class SeedData {
           endMinute: 0,
           type: 'Deep Work',
           label: 'Sprint Tasks',
+          isTask: true,
         ),
         TimeBlock(
           date: _date(1),
@@ -356,61 +287,9 @@ class SeedData {
         ),
       ];
 
-  // ─── Habits ──────────────────────────────────────────────
-
-  static List<Habit> get habits {
-    final now = DateTime.now();
-    return [
-      Habit(
-        name: 'Drink 8 glasses of water',
-        icon: 'water_drop',
-        type: HabitType.quantity,
-        targetValue: 8,
-        unit: 'glasses',
-        logs: List.generate(7, (i) {
-          final date = now.subtract(Duration(days: i));
-          return HabitLog(date: date, completed: i < 5, value: i < 5 ? 8 : 3);
-        }),
-      ),
-      Habit(
-        name: 'Exercise 30 minutes',
-        icon: 'fitness_center',
-        logs: List.generate(7, (i) {
-          final date = now.subtract(Duration(days: i));
-          return HabitLog(date: date, completed: i != 2 && i != 5);
-        }),
-      ),
-      Habit(
-        name: 'Read for 20 minutes',
-        icon: 'menu_book',
-        logs: List.generate(7, (i) {
-          final date = now.subtract(Duration(days: i));
-          return HabitLog(date: date, completed: i < 4);
-        }),
-      ),
-      Habit(
-        name: 'Meditate',
-        icon: 'self_improvement',
-        logs: List.generate(7, (i) {
-          final date = now.subtract(Duration(days: i));
-          return HabitLog(date: date, completed: i < 3);
-        }),
-      ),
-      Habit(
-        name: 'No junk food',
-        icon: 'no_food',
-        logs: List.generate(7, (i) {
-          final date = now.subtract(Duration(days: i));
-          return HabitLog(date: date, completed: i != 3);
-        }),
-      ),
-    ];
-  }
-
   // ─── Meal Plans (this week) ──────────────────────────────
 
   static List<MealPlan> mealPlans(List<Recipe> seededRecipes) {
-    // Map recipe names to IDs for easy lookup
     String id(String name) =>
         seededRecipes.firstWhere((r) => r.name == name).id;
 
@@ -420,28 +299,164 @@ class SeedData {
         breakfastRecipeId: id('Overnight Oats'),
         lunchRecipeId: id('Chicken Fried Rice'),
         dinnerRecipeId: id('Paneer Butter Masala'),
-        snackRecipeId: null,
       ),
       MealPlan(
         date: _date(1),
         breakfastRecipeId: id('Masala Dosa'),
         lunchRecipeId: id('Dal Tadka'),
         dinnerRecipeId: id('Chicken Fried Rice'),
-        snackRecipeId: null,
       ),
       MealPlan(
         date: _date(2),
         breakfastRecipeId: id('Egg Bhurji'),
-        lunchRecipeId: null,
         dinnerRecipeId: id('Dal Tadka'),
-        snackRecipeId: null,
       ),
-      MealPlan(
-        date: _date(3),
-        breakfastRecipeId: id('Overnight Oats'),
-        lunchRecipeId: id('Paneer Butter Masala'),
-        dinnerRecipeId: null,
-        snackRecipeId: null,
+    ];
+  }
+
+  // ─── Inventory ───────────────────────────────────────────
+
+  static final List<InventoryItem> inventoryItems = [
+    InventoryItem(
+      name: 'Paneer',
+      quantity: '500',
+      unit: 'g',
+      category: 'Fridge',
+      expiryDate: DateTime.now().add(const Duration(days: 3)),
+    ),
+    InventoryItem(
+      name: 'Milk',
+      quantity: '1',
+      unit: 'litre',
+      category: 'Fridge',
+      expiryDate: DateTime.now().add(const Duration(days: 2)),
+    ),
+    InventoryItem(
+      name: 'Eggs',
+      quantity: '12',
+      unit: '',
+      category: 'Fridge',
+      expiryDate: DateTime.now().add(const Duration(days: 7)),
+    ),
+    InventoryItem(
+      name: 'Butter',
+      quantity: '200',
+      unit: 'g',
+      category: 'Fridge',
+    ),
+    InventoryItem(
+      name: 'Onion',
+      quantity: '6',
+      unit: '',
+      category: 'Pantry',
+    ),
+    InventoryItem(
+      name: 'Tomato',
+      quantity: '8',
+      unit: '',
+      category: 'Fridge',
+      expiryDate: DateTime.now().add(const Duration(days: 4)),
+    ),
+    InventoryItem(
+      name: 'Rice',
+      quantity: '2',
+      unit: 'kg',
+      category: 'Pantry',
+    ),
+    InventoryItem(
+      name: 'Toor dal',
+      quantity: '500',
+      unit: 'g',
+      category: 'Pantry',
+    ),
+    InventoryItem(
+      name: 'Rolled oats',
+      quantity: '250',
+      unit: 'g',
+      category: 'Pantry',
+    ),
+    InventoryItem(
+      name: 'Oil',
+      quantity: '1',
+      unit: 'litre',
+      category: 'Pantry',
+    ),
+    InventoryItem(
+      name: 'Chicken breast',
+      quantity: '500',
+      unit: 'g',
+      category: 'Freezer',
+      expiryDate: DateTime.now().add(const Duration(days: 14)),
+    ),
+    InventoryItem(
+      name: 'Mixed berries',
+      quantity: '200',
+      unit: 'g',
+      category: 'Freezer',
+      expiryDate: DateTime.now().add(const Duration(days: 30)),
+    ),
+    InventoryItem(
+      name: 'Cream',
+      quantity: '200',
+      unit: 'ml',
+      category: 'Fridge',
+      expiryDate: DateTime.now().add(const Duration(days: 5)),
+      isLowStock: true,
+    ),
+  ];
+
+  // ─── Expenses ────────────────────────────────────────────
+
+  static List<Expense> get expenses {
+    final now = DateTime.now();
+    return [
+      Expense(
+        title: 'Weekly groceries',
+        amount: 850,
+        category: 'Groceries',
+        date: now.subtract(const Duration(days: 1)),
+      ),
+      Expense(
+        title: 'Auto rickshaw',
+        amount: 120,
+        category: 'Transport',
+        date: now.subtract(const Duration(days: 1)),
+      ),
+      Expense(
+        title: 'Coffee with friends',
+        amount: 280,
+        category: 'Dining Out',
+        date: now,
+      ),
+      Expense(
+        title: 'Vegetables',
+        amount: 320,
+        category: 'Groceries',
+        date: now,
+      ),
+      Expense(
+        title: 'Internet bill',
+        amount: 699,
+        category: 'Bills',
+        date: now.subtract(const Duration(days: 3)),
+      ),
+      Expense(
+        title: 'Fruits',
+        amount: 200,
+        category: 'Groceries',
+        date: now.subtract(const Duration(days: 2)),
+      ),
+      Expense(
+        title: 'Swiggy dinner',
+        amount: 450,
+        category: 'Dining Out',
+        date: now.subtract(const Duration(days: 4)),
+      ),
+      Expense(
+        title: 'Medicine',
+        amount: 150,
+        category: 'Health',
+        date: now.subtract(const Duration(days: 5)),
       ),
     ];
   }
@@ -450,76 +465,22 @@ class SeedData {
 
   static final List<ShoppingItem> shoppingItems = [
     ShoppingItem(
-      name: 'Paneer',
-      quantity: '250',
-      unit: 'g',
-      source: ShoppingItemSource.auto,
-    ),
-    ShoppingItem(
-      name: 'Tomatoes',
-      quantity: '6',
-      unit: '',
-      source: ShoppingItemSource.auto,
-    ),
-    ShoppingItem(
-      name: 'Onions',
-      quantity: '5',
-      unit: '',
-      source: ShoppingItemSource.auto,
-    ),
-    ShoppingItem(
-      name: 'Butter',
-      quantity: '1',
-      unit: 'pack',
-      source: ShoppingItemSource.auto,
-    ),
-    ShoppingItem(
-      name: 'Fresh cream',
-      quantity: '200',
-      unit: 'ml',
-      source: ShoppingItemSource.auto,
-    ),
-    ShoppingItem(
-      name: 'Chicken breast',
+      name: 'Yogurt',
       quantity: '500',
       unit: 'g',
       source: ShoppingItemSource.auto,
     ),
     ShoppingItem(
-      name: 'Eggs',
+      name: 'Honey',
+      quantity: '1',
+      unit: 'bottle',
+      source: ShoppingItemSource.auto,
+    ),
+    ShoppingItem(
+      name: 'Banana',
       quantity: '6',
       unit: '',
       source: ShoppingItemSource.auto,
-    ),
-    ShoppingItem(
-      name: 'Rolled oats',
-      quantity: '1',
-      unit: 'pack',
-      source: ShoppingItemSource.auto,
-    ),
-    ShoppingItem(
-      name: 'Mixed berries',
-      quantity: '1',
-      unit: 'pack',
-      source: ShoppingItemSource.auto,
-    ),
-    ShoppingItem(
-      name: 'Toor dal',
-      quantity: '500',
-      unit: 'g',
-      source: ShoppingItemSource.auto,
-    ),
-    ShoppingItem(
-      name: 'Bananas',
-      quantity: '6',
-      unit: '',
-      source: ShoppingItemSource.manual,
-    ),
-    ShoppingItem(
-      name: 'Milk',
-      quantity: '1',
-      unit: 'litre',
-      source: ShoppingItemSource.manual,
     ),
     ShoppingItem(
       name: 'Bread',
@@ -532,20 +493,6 @@ class SeedData {
       quantity: '500',
       unit: 'g',
       source: ShoppingItemSource.manual,
-    ),
-    ShoppingItem(
-      name: 'Rice',
-      quantity: '2',
-      unit: 'kg',
-      source: ShoppingItemSource.manual,
-      isChecked: true,
-    ),
-    ShoppingItem(
-      name: 'Oil',
-      quantity: '1',
-      unit: 'litre',
-      source: ShoppingItemSource.manual,
-      isChecked: true,
     ),
   ];
 }
