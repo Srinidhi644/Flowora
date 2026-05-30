@@ -10,6 +10,7 @@ An all-in-one life management app built with Flutter + Spring Boot.
 - **Unified Schedule** — Time blocks + tasks in one view with status colors (green = done, grey = upcoming, red = missed)
 - **Recipe Book** — Save recipes, search by ingredients, "What can I cook?"
 - **Inventory Tracker** — Track fridge, pantry, and freezer items with expiry alerts
+- **Smart Cooking Flow** — Assign a meal → inventory checked → missing items auto-added to shopping list. Mark cooking done → inventory auto-deducted
 - **Meal Planner** — Weekly meal planning with auto shopping list
 - **Habit Tracker** — Daily check-ins with streak tracking
 - **Expense Tracker** — Track daily spending with category breakdowns
