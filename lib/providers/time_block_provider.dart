@@ -44,21 +44,21 @@ class TimeBlockNotifier extends StateNotifier<List<TimeBlock>> {
 
   Future<void> addBlock(TimeBlock block) async {
     state = [...state, block];
-    _saveToHive();
+    await _saveToHive();
 
     if (ApiClient.isLoggedIn) {
       try {
         final res = await ApiClient.createTimeBlock(block.toJson());
         final serverBlock = TimeBlock.fromJson(Map<String, dynamic>.from(res));
         state = state.map((b) => b.id == block.id ? serverBlock : b).toList();
-        _saveToHive();
+        await _saveToHive();
       } catch (_) {}
     }
   }
 
   Future<void> updateBlock(TimeBlock updated) async {
     state = state.map((b) => b.id == updated.id ? updated : b).toList();
-    _saveToHive();
+    await _saveToHive();
 
     if (ApiClient.isLoggedIn) {
       try {
@@ -69,7 +69,7 @@ class TimeBlockNotifier extends StateNotifier<List<TimeBlock>> {
 
   Future<void> deleteBlock(String id) async {
     state = state.where((b) => b.id != id).toList();
-    _saveToHive();
+    await _saveToHive();
 
     if (ApiClient.isLoggedIn) {
       try {
@@ -83,7 +83,7 @@ class TimeBlockNotifier extends StateNotifier<List<TimeBlock>> {
       if (b.id == id) return b.copyWith(isComplete: !b.isComplete);
       return b;
     }).toList();
-    _saveToHive();
+    await _saveToHive();
 
     if (ApiClient.isLoggedIn) {
       final block = state.firstWhere((b) => b.id == id);

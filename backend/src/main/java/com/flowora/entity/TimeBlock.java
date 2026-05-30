@@ -28,4 +28,10 @@ public class TimeBlock {
     private String type;
 
     private String label;
+
+    @Builder.Default
+    private boolean isTask = false;
+
+    @Builder.Default
+    private boolean isComplete = false;
 }
