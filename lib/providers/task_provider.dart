@@ -20,8 +20,10 @@ class TaskNotifier extends StateNotifier<List<Task>> {
       try {
         final data = await ApiClient.getTasks();
         final tasks = data.map((e) => Task.fromJson(Map<String, dynamic>.from(e))).toList();
-        state = tasks;
-        await _saveToHive();
+        if (tasks.isNotEmpty) {
+          state = tasks;
+          await _saveToHive();
+        }
       } catch (_) {
         // Offline — use local data
       }

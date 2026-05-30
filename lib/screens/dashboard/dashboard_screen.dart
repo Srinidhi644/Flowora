@@ -44,10 +44,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   }
 
   void _refreshAll() {
-    ref.invalidate(timeBlockProvider);
-    ref.invalidate(mealPlanProvider);
-    ref.invalidate(recipeProvider);
-    ref.invalidate(expenseProvider);
+    // No-op: providers auto-update via ref.watch
   }
 
   @override
@@ -196,7 +193,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   return MealSlotCard(
                     mealType: mealType,
                     recipe: recipe,
-                    onTap: () => context.push('/meal-planner'),
+                    onTap: () => _selectMeal(mealType, recipeId),
                   );
                 },
                 childCount: AppConstants.mealTypes.length,
@@ -211,6 +208,89 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showQuickAdd(context),
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  void _selectMeal(String mealType, String? currentRecipeId) {
+    final recipes = ref.read(recipeProvider);
+    final hasMeal = currentRecipeId != null;
+
+    if (recipes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Add some recipes first!'),
+          action: SnackBarAction(
+            label: 'Add',
+            onPressed: () => context.push('/recipes/add'),
+          ),
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Select for $mealType', style: AppTextStyles.heading3),
+            const SizedBox(height: 12),
+            if (hasMeal)
+              ListTile(
+                leading: const Icon(Icons.close, color: AppColors.error),
+                title: const Text('Remove meal'),
+                onTap: () {
+                  CookingService(ref).onMealRemoved(currentRecipeId);
+                  ref.read(mealPlanProvider.notifier)
+                      .assignMeal(DateTime.now(), mealType, null);
+                  Navigator.pop(ctx);
+                },
+              ),
+            if (hasMeal) const Divider(),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: recipes.length,
+                itemBuilder: (_, i) {
+                  final recipe = recipes[i];
+                  return ListTile(
+                    leading: const Icon(Icons.restaurant,
+                        color: AppColors.cooking),
+                    title: Text(recipe.name),
+                    subtitle: Text('${recipe.totalTimeMinutes} min'),
+                    onTap: () {
+                      ref.read(mealPlanProvider.notifier)
+                          .assignMeal(DateTime.now(), mealType, recipe.id);
+
+                      final cookingService = CookingService(ref);
+                      cookingService.onMealAssigned(recipe.id);
+                      final stock = cookingService.checkStock(recipe.id);
+                      Navigator.pop(ctx);
+
+                      if (stock.missing > 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '${stock.missing} missing item(s) added to shopping list',
+                            ),
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

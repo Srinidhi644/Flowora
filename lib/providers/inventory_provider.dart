@@ -28,7 +28,27 @@ class InventoryNotifier extends StateNotifier<List<InventoryItem>> {
   }
 
   void addItem(InventoryItem item) {
-    state = [...state, item];
+    // Check if item with same name already exists — merge quantities
+    final existingIdx = state.indexWhere(
+        (i) => i.name.toLowerCase() == item.name.toLowerCase());
+
+    if (existingIdx >= 0) {
+      final existing = state[existingIdx];
+      final oldQty = double.tryParse(existing.quantity) ?? 0;
+      final newQty = double.tryParse(item.quantity) ?? 0;
+      final totalQty = oldQty + newQty;
+
+      final merged = existing.copyWith(
+        quantity: totalQty == totalQty.roundToDouble()
+            ? totalQty.toInt().toString()
+            : totalQty.toStringAsFixed(1),
+        unit: item.unit.isNotEmpty ? item.unit : existing.unit,
+        isLowStock: false,
+      );
+      state = [...state]..[existingIdx] = merged;
+    } else {
+      state = [...state, item];
+    }
     _saveItems();
   }
 

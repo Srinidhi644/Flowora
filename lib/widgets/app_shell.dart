@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flowora/providers/time_block_provider.dart';
-import 'package:flowora/providers/meal_plan_provider.dart';
-import 'package:flowora/providers/recipe_provider.dart';
-import 'package:flowora/providers/shopping_list_provider.dart';
-import 'package:flowora/providers/expense_provider.dart';
 
 class AppShell extends ConsumerWidget {
   final Widget child;
@@ -22,14 +17,6 @@ class AppShell extends ConsumerWidget {
     return 0;
   }
 
-  void _refreshAllProviders(WidgetRef ref) {
-    ref.invalidate(timeBlockProvider);
-    ref.invalidate(mealPlanProvider);
-    ref.invalidate(recipeProvider);
-    ref.invalidate(shoppingListProvider);
-    ref.invalidate(expenseProvider);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -38,8 +25,6 @@ class AppShell extends ConsumerWidget {
         selectedIndex: _currentIndex(context),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (index) {
-          _refreshAllProviders(ref);
-
           switch (index) {
             case 0:
               context.go('/');
