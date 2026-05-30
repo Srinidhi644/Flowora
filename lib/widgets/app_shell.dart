@@ -17,7 +17,7 @@ class AppShell extends ConsumerWidget {
     if (location == '/') return 0;
     if (location.startsWith('/time-blocks')) return 1;
     if (location.startsWith('/recipes')) return 2;
-    if (location.startsWith('/inventory')) return 3;
+    if (location.startsWith('/kitchen')) return 3;
     if (location.startsWith('/expenses')) return 4;
     return 0;
   }
@@ -36,6 +36,7 @@ class AppShell extends ConsumerWidget {
       body: child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex(context),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: (index) {
           _refreshAllProviders(ref);
 
@@ -50,7 +51,7 @@ class AppShell extends ConsumerWidget {
               context.go('/recipes');
               break;
             case 3:
-              context.go('/inventory');
+              context.go('/kitchen');
               break;
             case 4:
               context.go('/expenses');
@@ -74,9 +75,9 @@ class AppShell extends ConsumerWidget {
             label: 'Recipes',
           ),
           NavigationDestination(
-            icon: Icon(Icons.inventory_2_outlined),
-            selectedIcon: Icon(Icons.inventory_2),
-            label: 'Inventory',
+            icon: Icon(Icons.kitchen_outlined),
+            selectedIcon: Icon(Icons.kitchen),
+            label: 'Kitchen',
           ),
           NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined),

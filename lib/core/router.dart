@@ -11,7 +11,7 @@ import 'package:flowora/screens/time_blocks/add_time_block_screen.dart';
 import 'package:flowora/screens/recipes/recipe_list_screen.dart';
 import 'package:flowora/screens/recipes/recipe_detail_screen.dart';
 import 'package:flowora/screens/recipes/add_recipe_screen.dart';
-import 'package:flowora/screens/inventory/inventory_screen.dart';
+import 'package:flowora/screens/inventory/kitchen_screen.dart';
 import 'package:flowora/screens/meal_planner/meal_planner_screen.dart';
 import 'package:flowora/screens/shopping_list/shopping_list_screen.dart';
 import 'package:flowora/screens/expenses/expense_screen.dart';
@@ -62,8 +62,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const RecipeListScreen(),
           ),
           GoRoute(
-            path: '/inventory',
-            builder: (context, state) => const InventoryScreen(),
+            path: '/kitchen',
+            builder: (context, state) => const KitchenScreen(),
           ),
           GoRoute(
             path: '/expenses',
@@ -96,10 +96,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/meal-planner',
         builder: (context, state) => const MealPlannerScreen(),
-      ),
-      GoRoute(
-        path: '/shopping-list',
-        builder: (context, state) => const ShoppingListScreen(),
       ),
       GoRoute(
         path: '/settings',
