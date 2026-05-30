@@ -10,5 +10,6 @@ public class ShoppingItemDto {
     private String quantity;
     private String unit;
     private boolean checked;
+    private Double price;
     private ShoppingItem.Source source;
 }

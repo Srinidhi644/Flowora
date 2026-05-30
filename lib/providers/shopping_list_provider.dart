@@ -13,6 +13,20 @@ class ShoppingListNotifier extends StateNotifier<List<ShoppingItem>> {
 
   Future<void> _loadItems() async {
     await _loadFromHive();
+
+    // Shopping list is shared — sync from API
+    if (ApiClient.isLoggedIn) {
+      try {
+        final data = await ApiClient.getShoppingList();
+        final apiItems = data.map((e) => ShoppingItem.fromJson(Map<String, dynamic>.from(e))).toList();
+        if (apiItems.isNotEmpty) {
+          final apiIds = apiItems.map((i) => i.id).toSet();
+          final localOnly = state.where((i) => !apiIds.contains(i.id)).toList();
+          state = [...apiItems, ...localOnly];
+          await _saveToHive();
+        }
+      } catch (_) {}
+    }
   }
 
   Future<void> _loadFromHive() async {

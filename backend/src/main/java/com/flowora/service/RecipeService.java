@@ -17,15 +17,14 @@ public class RecipeService {
 
     private final RecipeRepository repo;
 
-    public List<Recipe> getAllByUser(String userId) {
-        return repo.findByUserIdOrderByCreatedAtDesc(userId);
+    // Shared: returns ALL recipes from all users
+    public List<Recipe> getAll() {
+        return repo.findAllByOrderByCreatedAtDesc();
     }
 
-    public Recipe getById(String userId, String recipeId) {
-        Recipe recipe = repo.findById(recipeId)
+    public Recipe getById(String recipeId) {
+        return repo.findById(recipeId)
                 .orElseThrow(() -> new RuntimeException("Recipe not found"));
-        if (!recipe.getUserId().equals(userId)) throw new RuntimeException("Unauthorized");
-        return recipe;
     }
 
     @Transactional
@@ -61,8 +60,8 @@ public class RecipeService {
     }
 
     @Transactional
-    public Recipe update(String userId, String recipeId, RecipeDto dto) {
-        Recipe recipe = getById(userId, recipeId);
+    public Recipe update(String recipeId, RecipeDto dto) {
+        Recipe recipe = getById(recipeId);
 
         if (dto.getName() != null) recipe.setName(dto.getName());
         recipe.setPrepTimeMinutes(dto.getPrepTimeMinutes());
@@ -89,15 +88,15 @@ public class RecipeService {
         return repo.save(recipe);
     }
 
-    public List<Recipe> searchByIngredients(String userId, List<String> ingredients) {
+    public List<Recipe> searchByIngredients(List<String> ingredients) {
         List<String> lower = ingredients.stream()
                 .map(String::toLowerCase)
                 .collect(Collectors.toList());
-        return repo.findByIngredientsIn(userId, lower);
+        return repo.findByIngredientsIn(lower);
     }
 
-    public void delete(String userId, String recipeId) {
-        Recipe recipe = getById(userId, recipeId);
+    public void delete(String recipeId) {
+        Recipe recipe = getById(recipeId);
         repo.delete(recipe);
     }
 }

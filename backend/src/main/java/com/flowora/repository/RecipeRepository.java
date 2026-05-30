@@ -9,8 +9,9 @@ import java.util.List;
 public interface RecipeRepository extends JpaRepository<Recipe, String> {
     List<Recipe> findByUserIdOrderByCreatedAtDesc(String userId);
 
+    List<Recipe> findAllByOrderByCreatedAtDesc();
+
     @Query("SELECT DISTINCT r FROM Recipe r JOIN r.ingredients i " +
-           "WHERE r.userId = :userId AND LOWER(i.name) IN :ingredients")
-    List<Recipe> findByIngredientsIn(@Param("userId") String userId,
-                                     @Param("ingredients") List<String> ingredients);
+           "WHERE LOWER(i.name) IN :ingredients")
+    List<Recipe> findByIngredientsIn(@Param("ingredients") List<String> ingredients);
 }

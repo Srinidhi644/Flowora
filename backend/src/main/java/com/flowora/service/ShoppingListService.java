@@ -15,8 +15,9 @@ public class ShoppingListService {
 
     private final ShoppingItemRepository repo;
 
-    public List<ShoppingItem> getAllByUser(String userId) {
-        return repo.findByUserIdOrderByCheckedAsc(userId);
+    // Shared: returns ALL shopping items
+    public List<ShoppingItem> getAll() {
+        return repo.findAllByOrderByCheckedAsc();
     }
 
     public ShoppingItem create(String userId, ShoppingItemDto dto) {
@@ -25,25 +26,26 @@ public class ShoppingListService {
                 .name(dto.getName())
                 .quantity(dto.getQuantity())
                 .unit(dto.getUnit())
+                .price(dto.getPrice())
                 .source(dto.getSource() != null ? dto.getSource() : ShoppingItem.Source.MANUAL)
                 .build();
         return repo.save(item);
     }
 
-    public ShoppingItem toggleChecked(String userId, String itemId) {
-        ShoppingItem item = getOwnedItem(userId, itemId);
+    public ShoppingItem toggleChecked(String itemId) {
+        ShoppingItem item = repo.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Item not found"));
         item.setChecked(!item.isChecked());
         return repo.save(item);
     }
 
-    public void delete(String userId, String itemId) {
-        ShoppingItem item = getOwnedItem(userId, itemId);
-        repo.delete(item);
+    public void delete(String itemId) {
+        repo.deleteById(itemId);
     }
 
     @Transactional
-    public void clearChecked(String userId) {
-        List<ShoppingItem> items = repo.findByUserIdOrderByCheckedAsc(userId);
+    public void clearChecked() {
+        List<ShoppingItem> items = repo.findAllByOrderByCheckedAsc();
         items.stream()
                 .filter(ShoppingItem::isChecked)
                 .forEach(repo::delete);
@@ -52,8 +54,7 @@ public class ShoppingListService {
     @Transactional
     public List<ShoppingItem> generateFromRecipes(String userId,
                                                    List<ShoppingItemDto> items) {
-        // Remove old auto items
-        repo.deleteByUserIdAndSource(userId, ShoppingItem.Source.AUTO);
+        repo.deleteBySource(ShoppingItem.Source.AUTO);
 
         List<ShoppingItem> newItems = items.stream()
                 .map(dto -> ShoppingItem.builder()
@@ -66,12 +67,5 @@ public class ShoppingListService {
                 .toList();
 
         return repo.saveAll(newItems);
-    }
-
-    private ShoppingItem getOwnedItem(String userId, String itemId) {
-        ShoppingItem item = repo.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Item not found"));
-        if (!item.getUserId().equals(userId)) throw new RuntimeException("Unauthorized");
-        return item;
     }
 }

@@ -17,40 +17,37 @@ public class ShoppingListController {
 
     private final ShoppingListService service;
 
+    // Shared: returns ALL shopping items
     @GetMapping
-    public List<ShoppingItem> getAll(Authentication auth) {
-        return service.getAllByUser(userId(auth));
+    public List<ShoppingItem> getAll() {
+        return service.getAll();
     }
 
     @PostMapping
     public ShoppingItem create(Authentication auth, @RequestBody ShoppingItemDto dto) {
-        return service.create(userId(auth), dto);
+        return service.create(auth.getPrincipal().toString(), dto);
     }
 
     @PatchMapping("/{id}/toggle")
-    public ShoppingItem toggle(Authentication auth, @PathVariable String id) {
-        return service.toggleChecked(userId(auth), id);
+    public ShoppingItem toggle(@PathVariable String id) {
+        return service.toggleChecked(id);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(Authentication auth, @PathVariable String id) {
-        service.delete(userId(auth), id);
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/clear-checked")
-    public ResponseEntity<Void> clearChecked(Authentication auth) {
-        service.clearChecked(userId(auth));
+    public ResponseEntity<Void> clearChecked() {
+        service.clearChecked();
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/generate")
     public List<ShoppingItem> generateFromRecipes(Authentication auth,
                                                     @RequestBody List<ShoppingItemDto> items) {
-        return service.generateFromRecipes(userId(auth), items);
-    }
-
-    private String userId(Authentication auth) {
-        return auth.getPrincipal().toString();
+        return service.generateFromRecipes(auth.getPrincipal().toString(), items);
     }
 }

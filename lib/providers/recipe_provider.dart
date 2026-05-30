@@ -11,7 +11,27 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
   }
 
   Future<void> _loadRecipes() async {
+    // Load local first (instant)
     await _loadFromHive();
+
+    // Recipes are SHARED — always fetch from API to get other users' recipes
+    if (ApiClient.isLoggedIn) {
+      try {
+        final data = await ApiClient.getRecipes();
+        final apiRecipes = data
+            .map((e) => Recipe.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
+
+        if (apiRecipes.isNotEmpty) {
+          // Merge: keep local-only recipes + all API recipes
+          final apiIds = apiRecipes.map((r) => r.id).toSet();
+          final localOnly =
+              state.where((r) => !apiIds.contains(r.id)).toList();
+          state = [...apiRecipes, ...localOnly];
+          await _saveToHive();
+        }
+      } catch (_) {}
+    }
   }
 
   Future<void> _loadFromHive() async {
@@ -32,21 +52,21 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
 
   Future<void> addRecipe(Recipe recipe) async {
     state = [...state, recipe];
-    _saveToHive();
+    await _saveToHive();
 
     if (ApiClient.isLoggedIn) {
       try {
         final res = await ApiClient.createRecipe(recipe.toJson());
         final serverRecipe = Recipe.fromJson(Map<String, dynamic>.from(res));
         state = state.map((r) => r.id == recipe.id ? serverRecipe : r).toList();
-        _saveToHive();
+        await _saveToHive();
       } catch (_) {}
     }
   }
 
   Future<void> updateRecipe(Recipe updated) async {
     state = state.map((r) => r.id == updated.id ? updated : r).toList();
-    _saveToHive();
+    await _saveToHive();
 
     if (ApiClient.isLoggedIn) {
       try {
@@ -57,7 +77,7 @@ class RecipeNotifier extends StateNotifier<List<Recipe>> {
 
   Future<void> deleteRecipe(String id) async {
     state = state.where((r) => r.id != id).toList();
-    _saveToHive();
+    await _saveToHive();
 
     if (ApiClient.isLoggedIn) {
       try {
