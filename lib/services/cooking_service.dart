@@ -27,24 +27,29 @@ class CookingService {
     if (recipe == null) return;
 
     final inventoryNotifier = ref.read(inventoryProvider.notifier);
-    final shoppingNotifier = ref.read(shoppingListProvider.notifier);
     final currentShoppingList = ref.read(shoppingListProvider);
 
     final missing = inventoryNotifier.getMissingIngredients(recipe);
 
+    // Collect all items to add, then batch-add
+    final itemsToAdd = <ShoppingItem>[];
     for (final ingredient in missing) {
       final alreadyInList = currentShoppingList.any((item) =>
           item.name.toLowerCase() == ingredient.name.toLowerCase() &&
           !item.isChecked);
 
       if (!alreadyInList) {
-        shoppingNotifier.addItem(ShoppingItem(
+        itemsToAdd.add(ShoppingItem(
           name: ingredient.name,
           quantity: ingredient.quantity,
           unit: ingredient.unit,
           source: ShoppingItemSource.auto,
         ));
       }
+    }
+
+    if (itemsToAdd.isNotEmpty) {
+      ref.read(shoppingListProvider.notifier).addItems(itemsToAdd);
     }
   }
 

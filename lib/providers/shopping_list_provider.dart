@@ -54,6 +54,12 @@ class ShoppingListNotifier extends StateNotifier<List<ShoppingItem>> {
     }
   }
 
+  /// Add multiple items at once (avoids async race conditions)
+  void addItems(List<ShoppingItem> items) {
+    state = [...state, ...items];
+    _saveToHive();
+  }
+
   Future<void> updateItem(ShoppingItem updated) async {
     state = state.map((i) => i.id == updated.id ? updated : i).toList();
     _saveToHive();
