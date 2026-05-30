@@ -18,8 +18,10 @@ class ShoppingListNotifier extends StateNotifier<List<ShoppingItem>> {
       try {
         final data = await ApiClient.getShoppingList();
         final items = data.map((e) => ShoppingItem.fromJson(Map<String, dynamic>.from(e))).toList();
-        state = items;
-        await _saveToHive();
+        if (items.isNotEmpty) {
+          state = items;
+          await _saveToHive();
+        }
       } catch (_) {}
     }
   }
