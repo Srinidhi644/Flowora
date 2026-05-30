@@ -124,3 +124,51 @@ final todayBlocksProvider = Provider<List<TimeBlock>>((ref) {
       return aStart.compareTo(bStart);
     });
 });
+
+/// Streak: count consecutive days (ending yesterday or today) where
+/// ALL blocks for that day were completed. If today has blocks and
+/// all are done, today counts. If not all done yet, streak counts
+/// up to yesterday.
+final streakProvider = Provider<int>((ref) {
+  final blocks = ref.watch(timeBlockProvider);
+  if (blocks.isEmpty) return 0;
+
+  final now = DateTime.now();
+  int streak = 0;
+
+  // Check today first
+  final todayBlocks = blocks.where(
+    (b) => AppDateUtils.isSameDay(b.date, now),
+  ).toList();
+
+  bool todayCounts = todayBlocks.isNotEmpty &&
+      todayBlocks.every((b) => b.isComplete);
+
+  // Start checking from today (if all done) or yesterday
+  var checkDate = todayCounts
+      ? AppDateUtils.startOfDay(now)
+      : AppDateUtils.startOfDay(now).subtract(const Duration(days: 1));
+
+  if (todayCounts) streak = 1;
+
+  // Walk backwards
+  for (int i = 0; i < 365; i++) {
+    if (todayCounts && i == 0) {
+      checkDate = checkDate.subtract(const Duration(days: 1));
+      continue;
+    }
+
+    final dayBlocks = blocks.where(
+      (b) => AppDateUtils.isSameDay(b.date, checkDate),
+    ).toList();
+
+    if (dayBlocks.isEmpty || !dayBlocks.every((b) => b.isComplete)) {
+      break;
+    }
+
+    streak++;
+    checkDate = checkDate.subtract(const Duration(days: 1));
+  }
+
+  return streak;
+});

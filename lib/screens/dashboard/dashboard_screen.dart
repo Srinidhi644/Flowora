@@ -54,6 +54,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     final recipes = ref.watch(recipeProvider);
     final todaySpent = ref.watch(todayExpensesProvider);
     final completedBlocks = todayBlocks.where((b) => b.isComplete).length;
+    final streak = ref.watch(streakProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -113,6 +114,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                       label: 'Schedule',
                       value: '$completedBlocks/${todayBlocks.length}',
                       icon: Icons.check_circle_outline,
+                    ),
+                    _StatItem(
+                      label: 'Streak',
+                      value: '$streak',
+                      icon: Icons.local_fire_department,
                     ),
                     _StatItem(
                       label: 'Meals',
